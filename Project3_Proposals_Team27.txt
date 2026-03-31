@@ -1,0 +1,97 @@
+Project 3 Proposal — Interview Preparation Platform
+Course
+S26CS6.401 — Software Engineering
+Team
+27
+Duration
+4 Weeks
+Members
+Akshat (2025201005), Om (2025201008), Hardik (2025201046), Gaurav (2025201065), Parv (2025201093)
+1. Description of the Use Case
+Target users are computer science students preparing for internships and placements, and administrators who
+manage assessments. Students today juggle multiple fragmented platforms — coding sites, MCQ banks and aptitude
+portals — with no unified tracking or placement-specific simulation. Our platform centralises coding problems, SQL
+exercises, subject MCQs (DSA, CN, OS, OOP, DBMS) and aptitude questions into a single environment with
+customisable timed tests, Docker-backed code execution, and analytics dashboards that help students identify weak
+areas and improve placement readiness. Administrators manage question banks and configure assessments through
+a dedicated console.
+2. Key Functionalities
+Core Features
+ Customisable timed test builder — select topics, difficulty, and question types
+ Coding evaluation with test cases in an isolated Docker sandbox
+ Subject MCQs (DSA, OS, CN, OOP, DBMS) with instant scoring and explanations
+ SQL execution evaluated against pre-loaded sample database schemas
+ Aptitude problem sets covering quantitative, logical and verbal reasoning
+User Interaction
+ Responsive web UI (React or Angular) with embedded code editor
+ Admin console for managing question banks, configuring tests and viewing reports
+ Student dashboard showing performance history, weak areas and progress trends
+Technical Highlights
+Node.js / .NET  ·  React.js / Angular.js  ·  MongoDB  ·  Docker  ·  Async job queue (message broker)
+Design Patterns
+Pattern
+Role in the System
+MVC
+Separates UI, business logic and data concerns across all modules
+Factory
+Creates the appropriate evaluation engine (code, SQL, or MCQ) at runtime
+Observer
+Pushes real-time analytics updates to the student dashboard on submission
+Functional Requirements
+FR-1
+Students register, log in and manage their profile
+FR-2
+Customise test by topic, question type and difficulty
+FR-3
+System assembles and delivers a timed test
+FR-4
+Code submitted in editor runs in Docker container
+FR-5
+Results and scores stored and displayed instantly
+FR-6
+Admins add, edit and delete questions
+Non-Functional Requirements
+NFR-1
+Performance: results within 5s
+NFR-2
+Scalability: services scale independently
+NFR-3
+Security: Docker sandbox + JWT auth
+NFR-4
+Availability: 99.5% uptime target
+NFR-5
+Usability: responsive, no training needed
+System Architecture
+The system is decomposed into five logical layers. Every service runs as an independent Docker container.
+Asynchronous communication via a message broker decouples the submission evaluator from the code execution
+sandbox, ensuring fault isolation and horizontal scalability.
+ Figure 1 — High-level architecture of the Interview Preparation Platform.
+ Communication: Frontend to Backend via HTTP/REST  |  Backend to Microservices via HTTP/REST or gRPC  | 
+Submission Evaluator to Code Execution via async message broker.
+3. Expected Time to Build Prototype
+The prototype will be delivered in 4 weeks with a team of five, implementing two non-trivial end-to-end functionalities:
+a Customisable Test Builder and a Docker-backed Code Editor. Work is parallelised across frontend, backend and
+infrastructure streams throughout.
+Week
+Phase
+Key Deliverables
+1
+Design & Setup
+DB schema, API contracts, auth, UI wireframes, Docker environment setup
+2
+Test Builder
+Topic & difficulty selector UI, test assembly logic, question service API, MCQ flow end-to-end
+3
+Code Editor & Docker
+Code editor UI, submission API, Docker executor, job queue, result retrieval
+4
+Integration & Demo
+End-to-end testing, bug fixes, UI polish, performance checks, demo preparation
+Prototype scope: (1) Customisable Test Builder — students select topics, difficulty, and question types to assemble a personalised
+timed test; (2) Code Editor with Docker Execution — browser-based editor with sandboxed code execution, test case evaluation
+and instant result feedback.
+4. Domain
+Education Technology (EdTech). The platform is designed for academic institutions, university training programmes
+and individual students. By consolidating all interview preparation into a single measurable environment, the system
+addresses a widely felt gap in placement readiness tooling — aligning with the SE course themes of modular
+architecture, design patterns and scalable software systems.

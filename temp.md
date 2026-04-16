@@ -115,8 +115,6 @@ Execution: Docker
 
 ---
 
-# 🔹 COPILOT AGENT PROMPT
-
 ## Paste this in GitHub Copilot Agent:
 
 You are a senior software engineer. Build a full-stack system for an "Interview Preparation Platform".

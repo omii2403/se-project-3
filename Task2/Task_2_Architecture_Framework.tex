@@ -1,0 +1,187 @@
+\documentclass[12pt,journal,onecolumn]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small, breaklines=true, frame=single}
+
+\begin{document}
+
+\title{Task 2: Architecture Framework}
+\author{Team 27}
+
+\maketitle
+
+\section{Stakeholder Identification (IEEE 42010)}
+
+IEEE 42010 says we should identify who are the stakeholders of our system, what are their concerns and then define viewpoints and views that address those concerns.
+
+\subsection{Stakeholders and Concerns}
+
+\begin{longtable}{|p{3cm}|p{3.5cm}|p{7.5cm}|}
+\hline
+\textbf{Stakeholder} & \textbf{Role} & \textbf{Key Concerns} \\
+\hline
+Students & Main users who take practice tests and coding challenges & Easy to use interface, fast code evaluation (under 5 seconds), correct scoring, analytics to find weak topics \\
+\hline
+Administrators & People who manage question banks and configure tests & Reliable add/edit/delete for questions, ability to create tests, access to platform usage reports \\
+\hline
+Developers & Team members who build and maintain the platform & Clean module separation, testable code, clear internal APIs, easy to set up locally \\
+\hline
+University / Institution & Organization that deploys this for students during placement season & 99.5\% uptime, should handle peak load during placement drives, data privacy, low cost \\
+\hline
+\end{longtable}
+
+\subsection{Architectural Viewpoints and Views}
+
+We have defined four viewpoints based on IEEE 42010. Each viewpoint tells us how to look at the system from a different angle and each view addresses specific stakeholder concerns.
+
+\subsubsection{Logical Viewpoint}
+\begin{itemize}
+    \item \textbf{View}: How the system is split into its four subsystems (Web Application, Test Management, Evaluation, Analytics) and the shared data layer.
+    \item \textbf{Concerns addressed}: Modularity (NFR6), separation of concerns, feature coverage.
+    \item \textbf{Stakeholders}: Developers, Administrators.
+    \item \textbf{Description}: This view shows how we have organized the application into independent modules inside a single application. Each module has its own routes, controllers, services and data access code. Modules talk to each other through internal function calls not through network calls. This way team members can work on their own module without causing problems for others.
+\end{itemize}
+
+\subsubsection{Process Viewpoint}
+\begin{itemize}
+    \item \textbf{View}: What happens at runtime when a student submits code, from the browser to the final result.
+    \item \textbf{Concerns addressed}: Performance (NFR1), async execution, fault isolation.
+    \item \textbf{Stakeholders}: Students, Developers.
+    \item \textbf{Description}: This view traces the full flow. Student submits code, API validates it and puts a job in the queue, worker picks the job, Docker container runs the code with resource limits, result is saved to the database, student dashboard shows the result. Because of the async design the API server is never blocked by long running code evaluations.
+\end{itemize}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    block/.style={draw, rounded corners, minimum width=2.2cm, minimum height=0.8cm, align=center, font=\scriptsize},
+    arrow/.style={-{Stealth[length=2mm]}, thick},
+]
+\node[block] (student) {Student};
+\node[block, right=of student] (frontend) {UI};
+\node[block, right=of frontend] (api) {API Server};
+\node[block, right=of api] (queue) {Message\\Queue};
+\node[block, right=of queue] (worker) {Worker};
+\node[block, right=of worker] (docker) {Docker\\Container};
+\node[block, below=of docker] (db) {Database};
+\node[block, below=of api] (result) {Result to\\Student};
+
+\draw[arrow] (student) -- (frontend);
+\draw[arrow] (frontend) -- (api);
+\draw[arrow] (api) -- (queue);
+\draw[arrow] (queue) -- (worker);
+\draw[arrow] (worker) -- (docker);
+\draw[arrow] (docker) -- (db);
+\draw[arrow] (db) -- (result);
+\draw[arrow] (result) -- (student |- result) -- (student);
+\end{tikzpicture}
+\caption{Process view: end to end code submission flow.}
+\label{fig:process}
+\end{figure}
+
+\subsubsection{Deployment Viewpoint}
+\begin{itemize}
+    \item \textbf{View}: How the system components are deployed on the server.
+    \item \textbf{Concerns addressed}: Availability (NFR4), scalability (NFR2), infrastructure cost.
+    \item \textbf{Stakeholders}: University/Institution, Developers.
+    \item \textbf{Description}: The whole application runs as a Docker Compose stack with these containers:
+    \begin{itemize}
+        \item \textbf{App container}: Server hosting all the application modules.
+        \item \textbf{Worker container}: Separate process that picks jobs from queue and manages Docker containers for running code.
+        \item \textbf{Database container}: Single shared database.
+        \item \textbf{Queue container}: Message queue for async job processing.
+        \item \textbf{Docker socket mount}: So the worker can create isolated containers for code execution.
+    \end{itemize}
+    During placement season when load increases we can start more worker containers without changing the application code.
+\end{itemize}
+
+\subsubsection{Security Viewpoint}
+\begin{itemize}
+    \item \textbf{View}: How authentication, authorization and code sandboxing work.
+    \item \textbf{Concerns addressed}: Security (NFR3), safe code execution (FR4).
+    \item \textbf{Stakeholders}: University/Institution.
+    \item \textbf{Description}:
+    \begin{itemize}
+        \item \textbf{Authentication}: JWT based stateless auth. On login the server creates a signed token with user ID and role. All requests after that include this token. No session storage needed on server.
+        \item \textbf{Authorization}: Role based access control. Admin only routes (like question management and reports) reject student tokens.
+        \item \textbf{Code Sandbox}: Each code submission runs in an isolated Docker container with no internet access, 256 MB RAM limit, 1 CPU core limit and 10 second timeout. Container filesystem is read only except the working directory.
+    \end{itemize}
+\end{itemize}
+
+\section{Major Design Decisions (Architecture Decision Records)}
+
+We have documented four important architecture decisions using the Nygard ADR template. Each ADR records the context, decision and consequences.
+
+\subsection{ADR-001: Use Docker Containers for Code Execution}
+
+\textbf{Status:} Accepted
+
+\textbf{Context:} Running student code directly on our server is risky. A bad program can crash the server or use up all the resources. We need OS level isolation with proper resource limits.
+
+\textbf{Decision:} Every code submission will run in a short lived Docker container with 256 MB RAM, 1 CPU core, 10 second timeout and no internet access. After execution the container is destroyed.
+
+\textbf{Consequences:}
+\begin{itemize}
+    \item \textit{What becomes easier:} Full isolation so one student's code cannot affect others. Resource limits enforced by the OS through cgroups. Adding support for new languages is just adding a new Docker image.
+    \item \textit{What becomes harder:} Container startup adds around 200 to 500 ms latency per submission. Docker needs to be set up on the server. Old containers must be cleaned up properly.
+\end{itemize}
+
+\subsection{ADR-002: Use Asynchronous Message Queue for Submission Processing}
+
+\textbf{Status:} Accepted
+
+\textbf{Context:} Code evaluation takes 2 to 10 seconds. If the API does this directly it gets blocked and cannot serve other users. During placement season many students submit at the same time.
+
+\textbf{Decision:} Put a message queue between the API and the code execution workers. API just queues the job and responds immediately with status QUEUED. Workers pick jobs from the queue, run the code and save results back. The student's page keeps checking for the result.
+
+\textbf{Consequences:}
+\begin{itemize}
+    \item \textit{What becomes easier:} API always responds fast (around 50 ms). Queue handles backpressure naturally. We can add more workers during peak load without changing the API code.
+    \item \textit{What becomes harder:} Student does not get result instantly, has to wait. Need to set up queue as an extra service. Must handle job failures and retries properly.
+\end{itemize}
+
+\subsection{ADR-003: Adopt Modular Monolith Architecture}
+
+\textbf{Status:} Accepted
+
+\textbf{Context:} We thought about microservices vs modular monolith. We are 5 students with 4 weeks and not much DevOps experience. Microservices bring too much complexity (service discovery, network calls between services, distributed transactions) for our scale. No real project starts with microservices. You go to microservices only when the monolith becomes too big to manage.
+
+\textbf{Decision:} Build one single application with clearly separated modules (auth, questions, tests, evaluation, analytics). Each module has its own folder with routes, controllers, services and data access code. Modules communicate through function calls not network calls.
+
+\begin{lstlisting}
+src/
+  auth/          # Authentication module
+  questions/     # Question management module
+  tests/         # Test generation module
+  evaluation/    # Submission evaluation module
+  analytics/     # Analytics and dashboard module
+  shared/        # Common utilities, DB connection, middleware
+  app.js         # Entry point that loads all modules
+\end{lstlisting}
+
+\textbf{Consequences:}
+\begin{itemize}
+    \item \textit{What becomes easier:} Simple deployment (one application, one process). No distributed system overhead. Team members work on separate modules with minimal coupling. If we need to split into services later the boundaries are already clean.
+    \item \textit{What becomes harder:} Everything runs in one process so a crash in one module affects the whole app. Cannot scale individual modules separately. Must enforce module boundaries through code reviews.
+\end{itemize}
+
+\subsection{ADR-004: Use JWT Based Stateless Authentication}
+
+\textbf{Status:} Accepted
+
+\textbf{Context:} Platform has students and admins with different permissions. We need auth that does not require session storage on server side to keep the design simple.
+
+\textbf{Decision:} On login issue a signed JWT with user ID, role (student or admin) and expiry time. Client sends this token with every request in the Authorization header. Server middleware verifies signature without any database call. Admin only routes check the role field and reject student tokens. Token expires after 24 hours.
+
+\textbf{Consequences:}
+\begin{itemize}
+    \item \textit{What becomes easier:} Stateless and fast auth. Easy role checking. Scales well if we add more server instances. No session storage to maintain.
+    \item \textit{What becomes harder:} Cannot revoke tokens before expiry (fine for prototype, would add blacklist in production). Token is bigger than a session ID (around 300 bytes). Token signing secret must be kept safe.
+\end{itemize}
+
+\end{document}

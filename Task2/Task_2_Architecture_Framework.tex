@@ -4,7 +4,7 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{tikz}
-\usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds, shapes.geometric}
 \usepackage{listings}
 \lstset{basicstyle=\ttfamily\small, breaklines=true, frame=single}
 
@@ -100,6 +100,41 @@ We have defined four viewpoints based on IEEE 42010. Each viewpoint tells us how
     During placement season when load increases we can start more worker containers without changing the application code.
 \end{itemize}
 
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=0.6cm and 1.0cm,
+    container/.style={draw, rounded corners, minimum width=3.2cm, minimum height=1.0cm, align=center, font=\scriptsize, fill=blue!8},
+    hostbox/.style={draw, dashed, rounded corners, inner sep=0.5cm, fill=gray!5},
+    label/.style={font=\scriptsize\bfseries},
+    arrow/.style={-{Stealth[length=2.5mm]}, thick},
+    darrow/.style={<->, thick, dashed},
+]
+
+% Host server box
+\node[container] (app) {\textbf{App Container}\\(Node.js Server)\\All modules};
+\node[container, right=1.8cm of app] (worker) {\textbf{Worker Container}\\(Job Processor)\\Code evaluator};
+\node[container, below=1.2cm of app] (db) {\textbf{Database Container}\\(PostgreSQL)};
+\node[container, below=1.2cm of worker] (queue) {\textbf{Queue Container}\\(Message Broker)};
+\node[container, right=1.8cm of worker] (sandbox) {\textbf{Docker Sandbox}\\(Ephemeral)\\Student code};
+
+\begin{scope}[on background layer]
+    \node[hostbox, fit=(app)(worker)(db)(queue)(sandbox), label=above:{\textbf{Host Server — Docker Compose Stack}}] (host) {};
+\end{scope}
+
+\draw[arrow] (app) -- node[above, font=\scriptsize]{push job} (worker);
+\draw[arrow] (app) -- node[left, font=\scriptsize]{read/write} (db);
+\draw[arrow] (worker) -- node[right, font=\scriptsize]{read/write} (db);
+\draw[arrow] (app.south east) -- node[below, font=\scriptsize]{enqueue} (queue.north west);
+\draw[arrow] (queue) -- node[below, font=\scriptsize]{dequeue} (worker.south);
+\draw[arrow] (worker) -- node[below, font=\scriptsize]{spawn \& destroy} (sandbox);
+\draw[dashed, thick] (worker.north east) -- node[above, font=\scriptsize]{docker.sock} (sandbox.north west);
+
+\end{tikzpicture}
+\caption{Deployment view: Docker Compose stack showing all containers and their interactions on the host server.}
+\label{fig:deployment}
+\end{figure}
+
 \subsubsection{Security Viewpoint}
 \begin{itemize}
     \item \textbf{View}: How authentication, authorization and code sandboxing work.
@@ -112,6 +147,8 @@ We have defined four viewpoints based on IEEE 42010. Each viewpoint tells us how
         \item \textbf{Code Sandbox}: Each code submission runs in an isolated Docker container with no internet access, 256 MB RAM limit, 1 CPU core limit and 10 second timeout. Container filesystem is read only except the working directory.
     \end{itemize}
 \end{itemize}
+
+\newpage
 
 \section{Major Design Decisions (Architecture Decision Records)}
 

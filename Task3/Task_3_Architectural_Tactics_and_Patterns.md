@@ -478,21 +478,25 @@ Primary NFR impact:
 
 - NFR1 (performance), NFR2 (scalability), NFR4 (availability).
 
-### 5.5 Microservices Pattern (Subsystem-Oriented Deployment)
+### 5.5 Modular Monolith Pattern
 
 How it is used:
 
-- Auth, Test Management, Evaluation, and Analytics are independent deployable services.
-- Services communicate via APIs and broker messages, not direct shared internal code.
+- The entire application is built as a single deployable unit but is internally divided into clearly separated modules: auth, questions, tests, evaluation, and analytics.
+- Each module has its own folder with its own routes, controllers, services, and data access layer.
+- Modules communicate through internal function calls and events, not through network calls.
+- No module directly accesses another module's database tables or internal files.
 
 Why this is a good fit:
 
-- Teams can scale and release critical services independently.
-- Failures stay more isolated than in a monolithic deployment.
+- Avoids the operational complexity of microservices (no service discovery, no distributed transactions, no inter-service networking) which is appropriate for our team size of five students and a four week timeline.
+- Module boundaries are clean and well-enforced through code review, so if the system needs to be split into separate services in the future the boundaries are already in place.
+- A single deployment process makes the system easy to run, test, and debug locally.
+- Team members can work on separate modules in parallel with minimal risk of merge conflicts.
 
 Primary NFR impact:
 
-- NFR2 (scalability), NFR4 (availability), NFR6 (maintainability).
+- NFR6 (maintainability), NFR2 (scalability through clean module separation), NFR4 (availability through simplified deployment and reduced failure surface).
 
 ---
 

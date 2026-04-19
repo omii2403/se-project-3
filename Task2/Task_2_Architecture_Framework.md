@@ -82,15 +82,3 @@ Full record: [ADRs/ADR-004-JWT-Authentication.md](ADRs/ADR-004-JWT-Authenticatio
 - Effect: Flexible schema and faster development. Data integrity checks must be handled in service logic.
 
 Full record: [ADRs/ADR-005-MongoDB-Database-Selection.md](ADRs/ADR-005-MongoDB-Database-Selection.md)
-
-## 3. Diagrams
-
-### 3.1 C4 Style Deployment View
-![Task 2 C4 deployment view](diagrams/task2-c4-deployment.png)
-
-Diagram source: [diagrams/task2-c4-deployment.mmd](diagrams/task2-c4-deployment.mmd)
-
-### 3.2 UML Sequence for Submission Flow
-![Task 2 UML sequence view](diagrams/task2-uml-submission-sequence.png)
-
-Diagram source: [diagrams/task2-uml-submission-sequence.mmd](diagrams/task2-uml-submission-sequence.mmd)

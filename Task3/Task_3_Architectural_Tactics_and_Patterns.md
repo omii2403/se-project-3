@@ -176,7 +176,7 @@ Why this pattern:
 - unit testing is easy because each strategy is isolated
 
 Diagram:
-![Task 3 UML strategy pattern](diagrams/task3-uml-strategy.png)
+<img src="diagrams/task3-uml-strategy.png" alt="Task 3 UML strategy pattern" width="70%" />
 
 Diagram source: [diagrams/task3-uml-strategy.mmd](diagrams/task3-uml-strategy.mmd)
 
@@ -191,7 +191,7 @@ Why this pattern:
 - lower coupling between controller and concrete classes
 
 Diagram:
-![Task 3 UML factory pattern](diagrams/task3-uml-factory.png)
+<img src="diagrams/task3-uml-factory.png" alt="Task 3 UML factory pattern" width="50%" />
 
 Diagram source: [diagrams/task3-uml-factory.mmd](diagrams/task3-uml-factory.mmd)
 
@@ -228,11 +228,6 @@ Diagram source: [diagrams/task3-uml-factory.mmd](diagrams/task3-uml-factory.mmd)
 ![Task 3 C4 container view](diagrams/task3-c4-container.png)
 
 Diagram source: [diagrams/task3-c4-container.mmd](diagrams/task3-c4-container.mmd)
-
-### 6.2 UML Strategy and Factory Overview
-![Task 3 UML strategy and factory overview](diagrams/task3-uml-strategy-factory-overview.png)
-
-Diagram source: [diagrams/task3-uml-strategy-factory-overview.mmd](diagrams/task3-uml-strategy-factory-overview.mmd)
 
 ## 7. NFR to Tactic Traceability Matrix
 

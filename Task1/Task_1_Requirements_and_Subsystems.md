@@ -30,7 +30,7 @@ Code compile and run takes time. If API thread waits for it then all other reque
 Project timeline is short and team size is five students. So modular monolith is practical. We keep auth, test, evaluation and analytics in separate modules with clear boundaries.
 
 ### ASR4 Fast Student Feedback
-Students need result quickly during practice. So queue wait time, worker speed and DB query speed are key architecture points.
+Students need result quickly during practice. So queue wait time, worker speed and MongoDB query speed are key architecture points.
 
 ## 3. Subsystem Overview
 
@@ -56,16 +56,4 @@ The platform is one modular monolith application with internal modules. Heavy co
 - Admin Console: Show usage and performance reports.
 
 ### 3.5 Shared Data Layer
-- DB: Store users, questions, tests, submissions and analytics data.
-
-## 4. Diagrams
-
-### 4.1 C4 Style Subsystem View
-![Task 1 C4 subsystem view](diagrams/task1-c4-context.png)
-
-Diagram source: [diagrams/task1-c4-context.mmd](diagrams/task1-c4-context.mmd)
-
-### 4.2 UML Module Relation View
-![Task 1 UML module relation view](diagrams/task1-uml-modules.png)
-
-Diagram source: [diagrams/task1-uml-modules.mmd](diagrams/task1-uml-modules.mmd)
+- MongoDB Database: Store users, questions, tests, submissions and analytics data.

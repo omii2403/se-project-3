@@ -1,0 +1,28 @@
+classDiagram
+  class EvaluationController {
+    +evaluate(submission)
+  }
+
+  class StrategyFactory {
+    +getStrategy(type)
+  }
+
+  class EvaluationStrategy {
+    <<interface>>
+    +evaluate(submission)
+  }
+
+  class MCQStrategy
+  class SQLStrategy
+  class CodeStrategy
+
+  class SandboxExecutor {
+    +run(code, limits)
+  }
+
+  EvaluationController --> StrategyFactory : uses
+  StrategyFactory --> EvaluationStrategy : returns
+  EvaluationStrategy <|.. MCQStrategy
+  EvaluationStrategy <|.. SQLStrategy
+  EvaluationStrategy <|.. CodeStrategy
+  CodeStrategy --> SandboxExecutor : delegates

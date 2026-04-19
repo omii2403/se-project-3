@@ -1,0 +1,26 @@
+classDiagram
+  class EvaluationController {
+    +evaluate(submission)
+  }
+
+  class StrategyFactory {
+    +getStrategy(type)
+    -strategyMap
+  }
+
+  class EvaluationStrategy {
+    <<interface>>
+    +evaluate(submission)
+  }
+
+  class MCQStrategy
+  class SQLStrategy
+  class CodeStrategy
+
+  EvaluationController --> StrategyFactory : request by type
+  StrategyFactory --> MCQStrategy : creates
+  StrategyFactory --> SQLStrategy : creates
+  StrategyFactory --> CodeStrategy : creates
+  MCQStrategy ..|> EvaluationStrategy
+  SQLStrategy ..|> EvaluationStrategy
+  CodeStrategy ..|> EvaluationStrategy

@@ -1,0 +1,22 @@
+sequenceDiagram
+  actor Student
+  participant UI as Web UI
+  participant API as API Server
+  participant MQ as Message Queue
+  participant Worker as Worker Process
+  participant Sandbox as Docker Sandbox
+  participant DB as MongoDB
+
+  Student->>UI: Submit code
+  UI->>API: POST submission
+  API->>DB: Save submission as QUEUED
+  API->>MQ: Publish job
+  API-->>UI: Return submission id
+  Worker->>MQ: Pull job
+  Worker->>Sandbox: Run code with limits
+  Sandbox-->>Worker: Output and verdict
+  Worker->>DB: Save final result
+  UI->>API: Poll status
+  API->>DB: Read result
+  API-->>UI: Return result
+  UI-->>Student: Show score

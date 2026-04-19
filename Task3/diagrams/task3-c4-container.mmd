@@ -1,0 +1,29 @@
+flowchart LR
+  U[Student or Admin]
+  FE[Web Frontend]
+  AUTH[Auth Module]
+  TM[Test Management Module]
+  EVAL[Submission Evaluation Module]
+  MB[(Message Broker Queue)]
+  CW[Code Worker]
+  SQW[SQL Worker]
+  SB[Sandbox Containers]
+  DB[(MongoDB)]
+  AN[Analytics Module]
+  SD[Student Dashboard]
+  AC[Admin Console]
+
+  U --> FE
+  FE --> AUTH
+  FE --> TM
+  FE --> EVAL
+  EVAL --> MB
+  MB --> CW
+  MB --> SQW
+  CW --> SB
+  CW --> DB
+  SQW --> DB
+  EVAL --> DB
+  DB --> AN
+  AN --> SD
+  AN --> AC

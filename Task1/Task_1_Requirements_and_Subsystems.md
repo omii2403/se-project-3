@@ -1,54 +1,71 @@
 # Task 1: Requirements and Subsystems
 
-## 1. Functional and Non-functional Requirements
+## 1. Functional and Non Functional Requirements
 
 ### Functional Requirements
-- **FR1**: The platform should let students and admins register, log in and manage their profile.
-- **FR2**: Students should be able to pick topics, question type and difficulty to make their own practice tests.
-- **FR3**: System will create timed tests for users and make sure same questions are not repeated for a user.
-- **FR4**: Student code should run inside isolated sandboxed containers so it cannot harm the main server.
-- **FR5**: After submitting answers the system will auto evaluate and show scores on the student dashboard.
-- **FR6**: Admin should be able to add, edit and delete questions from the question bank.
+- FR1: The platform should allow students and admins to register, login and manage profile.
+- FR2: Students should select topic, question type and difficulty to create custom practice test.
+- FR3: System should create timed tests and avoid repeating same question for same user.
+- FR4: Student code should run in isolated sandbox container so main server stays safe.
+- FR5: After submission system should auto evaluate answers and show score in dashboard.
+- FR6: Admin should add, edit and delete questions in question bank.
 
-### Non-functional Requirements
-- **NFR1: Performance** - Code evaluation result should come within 5 seconds and pages should load within 2 seconds.
-- **NFR2: Scalability** - System should handle 1000 submissions at the same time without slowing down.
-- **NFR3: Security** - Authentication should be token based. User code must run in sandbox with limits like 256MB RAM and 1 CPU core max.
-- **NFR4: Availability** - Platform should have 99.5% uptime.
-- **NFR5: Usability** - Interface should be simple enough that student can start a test in 3 clicks without needing any training.
-- **NFR6: Maintainability** - System should be modular so any single module can be changed or replaced without breaking other parts.
+### Non Functional Requirements
+- NFR1 Performance: Code evaluation result should come in 5 seconds for normal submissions. Pages should load in 2 seconds.
+- NFR2 Scalability: System should handle 1000 concurrent submissions without major slowdown.
+- NFR3 Security: Authentication should be token based. Code execution should have strict limits like 256 MB RAM and 1 CPU core.
+- NFR4 Availability: Platform should maintain 99.5 percent uptime.
+- NFR5 Usability: Student should start a test in 3 clicks without training.
+- NFR6 Maintainability: System should be modular so one module change should not break others.
 
-### Key Architecturally Significant Requirements
-- **Secure Code Execution (FR4, NFR3)**: Students will write and submit code which we cannot trust. If we run it directly on our server then a bad program can crash everything. So we have to use sandboxed containers to keep the execution isolated from the main system.
-- **Asynchronous Execution (FR4, NFR1, NFR2)**: Compiling and running code takes time. If we do this on the main server thread it will block other users. So we use a message queue and separate worker processes to handle code execution in the background.
-- **Modular Design (NFR6)**: During placement season many students will use the platform at the same time. The web server and code execution workers should be separate modules so we can handle more load. Also keeping things modular makes it easier to update one part without breaking the rest.
+## 2. Architecturally Significant Requirements
 
----
+### ASR1 Secure Code Execution
+Student code is untrusted input. If we run it directly then one bad code can crash full app. So we must run code in sandbox container with CPU, memory and timeout limits.
 
-## 2. Subsystem Overview
+### ASR2 Async Submission Processing
+Code compile and run takes time. If API thread waits for it then all other requests become slow. So API should only push job to queue and worker should process in background.
 
-The system is split into four main subsystems and one shared data layer that all subsystems use together. Below diagram shows how they connect with each other.
+### ASR3 Clear Modular Boundaries
+Project timeline is short and team size is five students. So modular monolith is practical. We keep auth, test, evaluation and analytics in separate modules with clear boundaries.
 
-### Subsystem Descriptions
+### ASR4 Fast Student Feedback
+Students need result quickly during practice. So queue wait time, worker speed and DB query speed are key architecture points.
 
-#### Web Application System
-- **Web Frontend**: The UI that students use to practice and admins use to manage the platform.
-- **Authentication Service**: Handles user registration, login and session token management.
+## 3. Subsystem Overview
 
-#### Test Management System
-- **Question Management Service**: Gives admin the ability to add, update and remove coding, SQL and MCQ questions.
-- **Test Generation Engine**: Builds custom timed tests for students by picking questions randomly based on their selected topics and difficulty. It makes sure no question is repeated for the same user.
+The platform is one modular monolith application with internal modules. Heavy code execution is moved to worker process through queue.
 
-#### Evaluation System
-- **Submission Evaluation Engine**: This is the main evaluator. It checks whether the submission is MCQ, SQL or code and sends it to the right checker.
-- **Code Execution Service**: A worker process that picks jobs from the queue and runs user code safely inside isolated containers. It compares output against test cases.
-- **SQL Execution Service**: Runs SQL queries on a sample database to check if the student's answer is correct.
-- **Message Broker Queue**: Holds incoming evaluation requests in a queue so the main server does not get overloaded during heavy traffic.
+### 3.1 Web Application Module
+- Web Frontend: Student and admin user interface.
+- Authentication Module: Registration, login, token creation and access control.
 
-#### Analytics System
-- **Analytics Engine**: Calculates scores, finds weak topics and tracks performance history.
-- **Student Dashboard**: Shows test history and performance stats to the student.
-- **Admin Console**: Shows overall platform usage reports to the admin.
+### 3.2 Test Management Module
+- Question Management: Add, update and remove coding, SQL and MCQ questions.
+- Test Generation: Build timed test by topic, type and difficulty.
 
-#### Shared Data Layer (Cross-cutting)
-- **Central Database**: This database is shared across all subsystems. It stores user accounts, question banks, test configs, submission records and analytics data. Each subsystem accesses it through its own data access layer.
+### 3.3 Evaluation Module
+- Submission Evaluator: Detect submission type and call correct evaluator.
+- Code Worker: Pick queued jobs and run code in sandbox container.
+- SQL Evaluator: Run SQL answer on sample database and compare expected output.
+- Message Queue: Hold jobs and smooth traffic spike.
+
+### 3.4 Analytics Module
+- Analytics Engine: Calculate score and weak topic trends.
+- Student Dashboard: Show attempts, scores and progress.
+- Admin Console: Show usage and performance reports.
+
+### 3.5 Shared Data Layer
+- DB: Store users, questions, tests, submissions and analytics data.
+
+## 4. Diagrams
+
+### 4.1 C4 Style Subsystem View
+![Task 1 C4 subsystem view](diagrams/task1-c4-context.png)
+
+Diagram source: [diagrams/task1-c4-context.mmd](diagrams/task1-c4-context.mmd)
+
+### 4.2 UML Module Relation View
+![Task 1 UML module relation view](diagrams/task1-uml-modules.png)
+
+Diagram source: [diagrams/task1-uml-modules.mmd](diagrams/task1-uml-modules.mmd)

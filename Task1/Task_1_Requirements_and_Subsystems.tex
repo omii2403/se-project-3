@@ -1,129 +1,104 @@
 \documentclass[12pt,journal,onecolumn]{IEEEtran}
 \usepackage{graphicx}
-\usepackage{tikz}
-\usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
 
 \begin{document}
 
 \title{Task 1: Requirements and Subsystems}
 \author{Team 27}
-
 \maketitle
 
-\section{Functional and Non-functional Requirements}
+\section{Functional and Non Functional Requirements}
 
 \subsection{Functional Requirements}
 \begin{itemize}
-    \item \textbf{FR1}: The platform should let students and admins register, log in and manage their profile.
-    \item \textbf{FR2}: Students should be able to pick topics, question type and difficulty to make their own practice tests.
-    \item \textbf{FR3}: System will create timed tests for users and make sure same questions are not repeated for a user.
-    \item \textbf{FR4}: Student code should run inside isolated sandboxed containers so it cannot harm the main server.
-    \item \textbf{FR5}: After submitting answers the system will auto evaluate and show scores on the student dashboard.
-    \item \textbf{FR6}: Admin should be able to add, edit and delete questions from the question bank.
+    \item FR1: The platform should allow students and admins to register, login and manage profile.
+    \item FR2: Students should select topic, question type and difficulty to create custom practice test.
+    \item FR3: System should create timed tests and avoid repeating same question for same user.
+    \item FR4: Student code should run in isolated sandbox container so main server stays safe.
+    \item FR5: After submission system should auto evaluate answers and show score in dashboard.
+    \item FR6: Admin should add, edit and delete questions in question bank.
 \end{itemize}
 
-\subsection{Non-functional Requirements}
+\subsection{Non Functional Requirements}
 \begin{itemize}
-    \item \textbf{NFR1: Performance} - Code evaluation result should come within 5 seconds and pages should load within 2 seconds.
-    \item \textbf{NFR2: Scalability} - System should handle 1000 submissions at the same time without slowing down.
-    \item \textbf{NFR3: Security} - Authentication should be token based. User code must run in sandbox with limits like 256MB RAM and 1 CPU core max.
-    \item \textbf{NFR4: Availability} - Platform should have 99.5\% uptime.
-    \item \textbf{NFR5: Usability} - Interface should be simple enough that student can start a test in 3 clicks without needing any training.
-    \item \textbf{NFR6: Maintainability} - System should be modular so any single module can be changed or replaced without breaking other parts.
+    \item NFR1 Performance: Code evaluation result should come in 5 seconds for normal submissions. Pages should load in 2 seconds.
+    \item NFR2 Scalability: System should handle 1000 concurrent submissions without major slowdown.
+    \item NFR3 Security: Authentication should be token based. Code execution should have strict limits like 256 MB RAM and 1 CPU core.
+    \item NFR4 Availability: Platform should maintain 99.5\% uptime.
+    \item NFR5 Usability: Student should start a test in 3 clicks without training.
+    \item NFR6 Maintainability: System should be modular so one module change should not break others.
 \end{itemize}
 
-\subsection{Key Architecturally Significant Requirements}
-\begin{itemize}
-    \item \textbf{Secure Code Execution (FR4, NFR3)}: Students will write and submit code which we cannot trust. If we run it directly on our server then a bad program can crash everything. So we have to use sandboxed containers to keep the execution isolated from the main system.
-    \item \textbf{Asynchronous Execution (FR4, NFR1, NFR2)}: Compiling and running code takes time. If we do this on the main server thread it will block other users. So we use a message queue and separate worker processes to handle code execution in the background.
-    \item \textbf{Modular Design (NFR6)}: During placement season many students will use the platform at the same time. The web server and code execution workers should be separate modules so we can handle more load. Also keeping things modular makes it easier to update one part without breaking the rest.
-\end{itemize}
+\section{Architecturally Significant Requirements}
+
+\subsection{ASR1 Secure Code Execution}
+Student code is untrusted input. If we run it directly then one bad code can crash full app. So we must run code in sandbox container with CPU, memory and timeout limits.
+
+\subsection{ASR2 Async Submission Processing}
+Code compile and run takes time. If API thread waits for it then all other requests become slow. So API should only push job to queue and worker should process in background.
+
+\subsection{ASR3 Clear Modular Boundaries}
+Project timeline is short and team size is five students. So modular monolith is practical. We keep auth, test, evaluation and analytics in separate modules with clear boundaries.
+
+\subsection{ASR4 Fast Student Feedback}
+Students need result quickly during practice. So queue wait time, worker speed and MongoDB query speed are key architecture points.
 
 \section{Subsystem Overview}
 
-The system is split into four main subsystems and one shared data layer that all subsystems use together. Figure~\ref{fig:subsystem} shows how they connect with each other.
+The platform is one modular monolith application with internal modules. Heavy code execution is moved to worker process through queue.
 
+\subsection{Web Application Module}
+\begin{itemize}
+    \item Web Frontend: Student and admin user interface.
+    \item Authentication Module: Registration, login, token creation and access control.
+\end{itemize}
+
+\subsection{Test Management Module}
+\begin{itemize}
+    \item Question Management: Add, update and remove coding, SQL and MCQ questions.
+    \item Test Generation: Build timed test by topic, type and difficulty.
+\end{itemize}
+
+\subsection{Evaluation Module}
+\begin{itemize}
+    \item Submission Evaluator: Detect submission type and call correct evaluator.
+    \item Code Worker: Pick queued jobs and run code in sandbox container.
+    \item SQL Evaluator: Run SQL answer on sample database and compare expected output.
+    \item Message Queue: Hold jobs and smooth traffic spike.
+\end{itemize}
+
+\subsection{Analytics Module}
+\begin{itemize}
+    \item Analytics Engine: Calculate score and weak topic trends.
+    \item Student Dashboard: Show attempts, scores and progress.
+    \item Admin Console: Show usage and performance reports.
+\end{itemize}
+
+\subsection{Shared Data Layer}
+\begin{itemize}
+    \item MongoDB Database: Store users, questions, tests, submissions and analytics data.
+\end{itemize}
+
+\section{Diagrams}
+
+\subsection{C4 Style Subsystem View}
 \begin{figure}[htbp]
 \centering
-\begin{tikzpicture}[
-    node distance=1.2cm and 2.5cm,
-    box/.style={draw, rounded corners, minimum width=5.5cm, minimum height=2cm, align=center, font=\small},
-    widelabel/.style={draw, rounded corners, minimum width=12.5cm, minimum height=1.4cm, align=center, font=\small},
-    arrow/.style={-{Stealth[length=3mm]}, thick},
-]
-
-\node[box] (web) {
-    \textbf{Web Application System}\\[2pt]
-    Web Frontend\\
-    Authentication Service
-};
-
-\node[box, right=of web] (test) {
-    \textbf{Test Management System}\\[2pt]
-    Question Mgmt Service\\
-    Test Generation Engine
-};
-
-\node[widelabel, below=1.5cm of $(web.south)!0.5!(test.south)$] (eval) {
-    \textbf{Evaluation System}\\[2pt]
-    Submission Evaluator ~|~ Code Execution (Docker) ~|~ SQL Execution ~|~ Message Queue
-};
-
-\node[widelabel, below=1.2cm of eval] (analytics) {
-    \textbf{Analytics System}\\[2pt]
-    Analytics Engine ~|~ Student Dashboard ~|~ Admin Console
-};
-
-\node[widelabel, below=1.2cm of analytics, fill=gray!15] (db) {
-    \textbf{Shared Data Layer (Cross-cutting)}\\[2pt]
-    Central Database -- used by all subsystems
-};
-
-\draw[arrow] (web.south) -- (eval.north -| web.south) node[midway, left, font=\scriptsize] {Submissions};
-\draw[arrow] (test.south) -- (eval.north -| test.south) node[midway, right, font=\scriptsize] {Questions};
-\draw[arrow] (web.east) -- (test.west) node[midway, above, font=\scriptsize] {Test requests};
-\draw[arrow] (eval.south) -- (analytics.north) node[midway, right, font=\scriptsize] {Results};
-
-\draw[dashed, thick] (web.south west) -- (db.north west);
-\draw[dashed, thick] (test.south east) -- (db.north east);
-
-\end{tikzpicture}
-\caption{Subsystem interaction diagram of the Interview Preparation Platform.}
-\label{fig:subsystem}
+\includegraphics[width=0.95\linewidth]{diagrams/task1-c4-context.png}
+\caption{Task 1 C4 subsystem view}
+\label{fig:task1-c4}
 \end{figure}
 
-\subsection{Subsystem Descriptions}
+Diagram source: \texttt{diagrams/task1-c4-context.mmd}
 
-\subsubsection{Web Application System}
-\begin{itemize}
-    \item \textbf{Web Frontend}: The UI that students use to practice and admins use to manage the platform.
-    \item \textbf{Authentication Service}: Handles user registration, login and session token management.
-\end{itemize}
+\subsection{UML Module Relation View}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\linewidth]{diagrams/task1-uml-modules.png}
+\caption{Task 1 UML module relation view}
+\label{fig:task1-uml}
+\end{figure}
 
-\subsubsection{Test Management System}
-\begin{itemize}
-    \item \textbf{Question Management Service}: Gives admin the ability to add, update and remove coding, SQL and MCQ questions.
-    \item \textbf{Test Generation Engine}: Builds custom timed tests for students by picking questions randomly based on their selected topics and difficulty. It makes sure no question is repeated for the same user.
-\end{itemize}
-
-\subsubsection{Evaluation System}
-\begin{itemize}
-    \item \textbf{Submission Evaluation Engine}: This is the main evaluator. It checks whether the submission is MCQ, SQL or code and sends it to the right checker.
-    \item \textbf{Code Execution Service}: A worker process that picks jobs from the queue and runs user code safely inside isolated containers. It compares output against test cases.
-    \item \textbf{SQL Execution Service}: Runs SQL queries on a sample database to check if the student's answer is correct.
-    \item \textbf{Message Broker Queue}: Holds incoming evaluation requests in a queue so the main server does not get overloaded during heavy traffic.
-\end{itemize}
-
-\subsubsection{Analytics System}
-\begin{itemize}
-    \item \textbf{Analytics Engine}: Calculates scores, finds weak topics and tracks performance history.
-    \item \textbf{Student Dashboard}: Shows test history and performance stats to the student.
-    \item \textbf{Admin Console}: Shows overall platform usage reports to the admin.
-\end{itemize}
-
-\subsubsection{Shared Data Layer (Cross-cutting)}
-\begin{itemize}
-    \item \textbf{Central Database}: This database is shared across all subsystems. It stores user accounts, question banks, test configs, submission records and analytics data. Each subsystem accesses it through its own data access layer.
-\end{itemize}
+Diagram source: \texttt{diagrams/task1-uml-modules.mmd}
 
 \end{document}

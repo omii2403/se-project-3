@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getStudentSummary } from "../api";
 
@@ -9,28 +9,65 @@ function StudentPanel({ token }) {
   const [summary, setSummary] = useState(null);
   const [dashboardWarning, setDashboardWarning] = useState("");
 
-  useEffect(() => {
-    void loadSummary();
-  }, []);
-
-  useEffect(() => {
-    const warning = location.state?.autoSubmitWarning;
-    if (!warning) {
-      return;
-    }
-
-    setDashboardWarning(String(warning));
-    navigate(location.pathname, { replace: true, state: {} });
-  }, [location.pathname, location.state, navigate]);
-
-  async function loadSummary() {
+  const loadSummary = useCallback(async () => {
     try {
       const data = await getStudentSummary(token);
       setSummary(data);
     } catch (error) {
       setSummary({ error: error.message });
     }
-  }
+  }, [token]);
+
+  useEffect(() => {
+    void loadSummary();
+  }, [loadSummary]);
+
+  useEffect(() => {
+    const warning = location.state?.autoSubmitWarning;
+    const submitted = Boolean(location.state?.testSubmitted);
+
+    if (!warning && !submitted) {
+      return;
+    }
+
+    if (warning) {
+      setDashboardWarning(String(warning));
+    } else {
+      setDashboardWarning("Test submitted successfully. Latest results will appear as evaluation completes.");
+    }
+
+    void loadSummary();
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [loadSummary, location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      void loadSummary();
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        void loadSummary();
+      }
+    };
+
+    window.addEventListener("focus", handleRefresh);
+    window.addEventListener("online", handleRefresh);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void loadSummary();
+      }
+    }, 15000);
+
+    return () => {
+      window.removeEventListener("focus", handleRefresh);
+      window.removeEventListener("online", handleRefresh);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.clearInterval(timer);
+    };
+  }, [loadSummary]);
 
   const topicBreakdown = Array.isArray(summary?.topicBreakdown) ? summary.topicBreakdown : [];
   const chartTopics = [...topicBreakdown].sort(

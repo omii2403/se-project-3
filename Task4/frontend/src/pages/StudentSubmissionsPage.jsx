@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getQueueStatus, listSubmissions } from "../api";
 
@@ -62,6 +62,7 @@ function StudentSubmissionsPage({ token }) {
   const [expandedRows, setExpandedRows] = useState({});
   const [queueStatus, setQueueStatus] = useState(null);
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const [submissionPage, setSubmissionPage] = useState(1);
   const [submissionType, setSubmissionType] = useState("all");
   const [submissionPagination, setSubmissionPagination] = useState({
@@ -72,9 +73,70 @@ function StudentSubmissionsPage({ token }) {
     total: 0
   });
 
+  const loadSubmissions = useCallback(
+    async (page = submissionPage, type = submissionType, options = {}) => {
+      const { silent = false } = options;
+      if (!silent) {
+        setMessage("");
+        setLoading(true);
+      }
+
+      try {
+        const [data, queueData] = await Promise.all([
+          listSubmissions(token, {
+            limit: 10,
+            page,
+            type,
+            fresh: true
+          }),
+          getQueueStatus(token).catch(() => null)
+        ]);
+
+        setSubmissions(data.submissions || []);
+        setExpandedRows((prev) => {
+          const next = {};
+          for (const item of data.submissions || []) {
+            if (prev[item._id]) {
+              next[item._id] = true;
+            }
+          }
+          return next;
+        });
+        setSubmissionPagination(
+          data.pagination || {
+            page: 1,
+            totalPages: 1,
+            hasPrev: false,
+            hasNext: false,
+            total: 0
+          }
+        );
+        if (queueData) {
+          setQueueStatus(queueData);
+        }
+      } catch (error) {
+        setSubmissions([]);
+        setQueueStatus(null);
+        setSubmissionPagination({
+          page: 1,
+          totalPages: 1,
+          hasPrev: false,
+          hasNext: false,
+          total: 0
+        });
+        setMessage(error.message);
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [submissionPage, submissionType, token]
+  );
+
   useEffect(() => {
     void loadSubmissions(submissionPage, submissionType);
-  }, [submissionPage, submissionType]);
+  }, [loadSubmissions, submissionPage, submissionType]);
 
   useEffect(() => {
     const hasPending = submissions.some((item) => {
@@ -87,63 +149,42 @@ function StudentSubmissionsPage({ token }) {
     }
 
     const timer = window.setInterval(() => {
-      void loadSubmissions(submissionPage, submissionType);
+      void loadSubmissions(submissionPage, submissionType, { silent: true });
     }, 7000);
 
     return () => {
       window.clearInterval(timer);
     };
-  }, [submissionPage, submissionType, submissions]);
+  }, [loadSubmissions, submissionPage, submissionType, submissions]);
 
-  async function loadSubmissions(page = submissionPage, type = submissionType) {
-    setMessage("");
+  useEffect(() => {
+    const handleRefresh = () => {
+      void loadSubmissions(submissionPage, submissionType, { silent: true });
+    };
 
-    try {
-      const [data, queueData] = await Promise.all([
-        listSubmissions(token, {
-          limit: 10,
-          page,
-          type,
-          fresh: true
-        }),
-        getQueueStatus(token).catch(() => null)
-      ]);
-
-      setSubmissions(data.submissions || []);
-      setExpandedRows((prev) => {
-        const next = {};
-        for (const item of data.submissions || []) {
-          if (prev[item._id]) {
-            next[item._id] = true;
-          }
-        }
-        return next;
-      });
-      setSubmissionPagination(
-        data.pagination || {
-          page: 1,
-          totalPages: 1,
-          hasPrev: false,
-          hasNext: false,
-          total: 0
-        }
-      );
-      if (queueData) {
-        setQueueStatus(queueData);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        void loadSubmissions(submissionPage, submissionType, { silent: true });
       }
-    } catch (error) {
-      setSubmissions([]);
-      setQueueStatus(null);
-      setSubmissionPagination({
-        page: 1,
-        totalPages: 1,
-        hasPrev: false,
-        hasNext: false,
-        total: 0
-      });
-      setMessage(error.message);
-    }
-  }
+    };
+
+    window.addEventListener("focus", handleRefresh);
+    window.addEventListener("online", handleRefresh);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void loadSubmissions(submissionPage, submissionType, { silent: true });
+      }
+    }, 15000);
+
+    return () => {
+      window.removeEventListener("focus", handleRefresh);
+      window.removeEventListener("online", handleRefresh);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.clearInterval(timer);
+    };
+  }, [loadSubmissions, submissionPage, submissionType]);
 
   return (
     <section className="card">
@@ -184,6 +225,7 @@ function StudentSubmissionsPage({ token }) {
         </div>
 
         {message && <p className="error-text">{message}</p>}
+        {loading && <p className="meta">Loading latest submissions...</p>}
         {submissions.length === 0 && !message && <p>No submissions yet.</p>}
 
         {submissions.length > 0 && (

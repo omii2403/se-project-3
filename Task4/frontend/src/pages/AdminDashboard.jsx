@@ -1,34 +1,90 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAdminOverview, getMonitoringDashboard, listUsersByAdmin } from "../api";
 
 function AdminDashboard({ token }) {
   const [overview, setOverview] = useState(null);
   const [monitor, setMonitor] = useState(null);
+  const [overviewLoading, setOverviewLoading] = useState(false);
+  const [monitorLoading, setMonitorLoading] = useState(false);
+
+  const loadOverview = useCallback(
+    async (options = {}) => {
+      const { silent = false } = options;
+      if (!silent) {
+        setOverviewLoading(true);
+      }
+
+      try {
+        const data = await getAdminOverview(token);
+        setOverview(data);
+      } catch (error) {
+        setOverview({ error: error.message });
+      } finally {
+        if (!silent) {
+          setOverviewLoading(false);
+        }
+      }
+    },
+    [token]
+  );
+
+  const loadMonitor = useCallback(
+    async (options = {}) => {
+      const { silent = false } = options;
+      if (!silent) {
+        setMonitorLoading(true);
+      }
+
+      try {
+        const data = await getMonitoringDashboard(token);
+        setMonitor(data);
+      } catch (error) {
+        setMonitor({ error: error.message });
+      } finally {
+        if (!silent) {
+          setMonitorLoading(false);
+        }
+      }
+    },
+    [token]
+  );
 
   useEffect(() => {
     void loadOverview();
     void loadMonitor();
     void listUsersByAdmin(token).catch(() => null);
-  }, []);
+  }, [loadMonitor, loadOverview, token]);
 
-  async function loadOverview() {
-    try {
-      const data = await getAdminOverview(token);
-      setOverview(data);
-    } catch (error) {
-      setOverview({ error: error.message });
-    }
-  }
+  useEffect(() => {
+    const refreshAll = () => {
+      void loadOverview({ silent: true });
+      void loadMonitor({ silent: true });
+    };
 
-  async function loadMonitor() {
-    try {
-      const data = await getMonitoringDashboard(token);
-      setMonitor(data);
-    } catch (error) {
-      setMonitor({ error: error.message });
-    }
-  }
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        refreshAll();
+      }
+    };
+
+    window.addEventListener("focus", refreshAll);
+    window.addEventListener("online", refreshAll);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        refreshAll();
+      }
+    }, 15000);
+
+    return () => {
+      window.removeEventListener("focus", refreshAll);
+      window.removeEventListener("online", refreshAll);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.clearInterval(timer);
+    };
+  }, [loadMonitor, loadOverview]);
 
   const totals = overview?.totals || {};
   const statusRows = Array.isArray(overview?.submissionStatus) ? overview.submissionStatus : [];
@@ -58,6 +114,8 @@ function AdminDashboard({ token }) {
             Refresh
           </button>
         </div>
+
+        {overviewLoading && <p className="meta">Refreshing overview...</p>}
 
         {overview?.error && <p className="error-text">{overview.error}</p>}
 
@@ -138,6 +196,8 @@ function AdminDashboard({ token }) {
             Refresh
           </button>
         </div>
+
+        {monitorLoading && <p className="meta">Refreshing monitoring metrics...</p>}
 
         {monitor?.error && <p className="error-text">{monitor.error}</p>}
 

@@ -4,16 +4,18 @@ const { dockerTimeoutSec, dockerPullTimeoutSec } = require("../shared/config");
 const languageProfiles = {
   javascript: {
     image: "node:20-alpine",
-    command: "cat > /tmp/main.js && node /tmp/main.js"
+    command:
+      "printf '%s' \"$CODE_B64\" | base64 -d > /tmp/main.js && printf '%s' \"$INPUT_B64\" | base64 -d > /tmp/input.txt && node /tmp/main.js < /tmp/input.txt"
   },
   python: {
     image: "python:3.12-alpine",
-    command: "cat > /tmp/main.py && python /tmp/main.py"
+    command:
+      "printf '%s' \"$CODE_B64\" | base64 -d > /tmp/main.py && printf '%s' \"$INPUT_B64\" | base64 -d > /tmp/input.txt && python /tmp/main.py < /tmp/input.txt"
   },
   cpp: {
     image: "gcc:14",
     command:
-      "cat > /tmp/main.cpp && g++ /tmp/main.cpp -O2 -std=c++17 -o /tmp/main && /tmp/main"
+      "printf '%s' \"$CODE_B64\" | base64 -d > /tmp/main.cpp && printf '%s' \"$INPUT_B64\" | base64 -d > /tmp/input.txt && g++ /tmp/main.cpp -O2 -std=c++17 -o /tmp/main && /tmp/main < /tmp/input.txt"
   }
 };
 
@@ -101,12 +103,15 @@ async function prePullDockerImages() {
   }
 }
 
-function runCodeInDocker(language, code) {
+function runCodeInDocker(language, code, input = "") {
   const profile = languageProfiles[String(language || "").toLowerCase()];
 
   if (!profile) {
     throw new Error("Unsupported language for docker runner");
   }
+
+  const codeB64 = Buffer.from(String(code || ""), "utf8").toString("base64");
+  const inputB64 = Buffer.from(String(input || ""), "utf8").toString("base64");
 
   return new Promise((resolve, reject) => {
     const args = [
@@ -118,7 +123,10 @@ function runCodeInDocker(language, code) {
       "1",
       "--memory",
       "256m",
-      "-i",
+      "-e",
+      `CODE_B64=${codeB64}`,
+      "-e",
+      `INPUT_B64=${inputB64}`,
       profile.image,
       "sh",
       "-c",
@@ -173,8 +181,6 @@ function runCodeInDocker(language, code) {
       });
     });
 
-    child.stdin.write(String(code || ""));
-    child.stdin.end();
   });
 }
 

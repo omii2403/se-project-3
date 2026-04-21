@@ -1,4 +1,5 @@
 \documentclass[12pt,journal,onecolumn]{IEEEtran}
+\usepackage{longtable}
 
 \begin{document}
 
@@ -35,6 +36,29 @@
     \item NFR7 Observability: API and worker should emit structured logs and runtime telemetry for failures and latency.
     \item NFR8 Freshness: Read cache must be invalidated on writes so updated submissions/topics are shown quickly.
 \end{itemize}
+
+\subsection{Quantified System-Level Constraints (NFR Targets)}
+\begin{longtable}{|p{2.2cm}|p{3.4cm}|p{4.6cm}|p{4.6cm}|}
+\hline
+\textbf{NFR} & \textbf{Metric} & \textbf{Target / Constraint} & \textbf{Acceptance Check} \\
+\hline
+NFR1 Performance & Submission API acknowledgement latency & p95 $\leq$ 500 ms under normal load (evaluation offloaded to worker) & Monitor \texttt{/api/monitor/dashboard} latency snapshot \\
+\hline
+NFR1 Performance & Evaluation time budget per question & hard timeout $\leq$ 10 s & Verify timeout behavior in evaluator logs/results \\
+\hline
+NFR2 Security & Sandbox isolation & 100\% code runs with \texttt{--cpus 1}, \texttt{--memory 256m}, \texttt{--network none} & Docker runner audit + sample executions \\
+\hline
+NFR2 Security & API protection coverage & 100\% \texttt{/api/*} protected except signup/signin & Route + middleware audit \\
+\hline
+NFR3 Reliability & Queue retry policy & attempts = 2, exponential backoff delay = 1000 ms & Queue config inspection + retry test \\
+\hline
+NFR4 Availability & Readiness dependency gate & \texttt{/health/ready} must return 503 when Mongo/Redis/worker unhealthy & Stop dependency and verify response \\
+\hline
+NFR7 Observability & Runtime telemetry window & API latency and worker telemetry snapshots available in 5-min runtime window & \texttt{/api/monitor/dashboard} response check \\
+\hline
+NFR8 Freshness & Read cache staleness control & submissions cache TTL 8000 ms, topics cache TTL 60000 ms & Verify TTL config + invalidation on writes \\
+\hline
+\end{longtable}
 
 \section{Architecturally Significant Requirements}
 

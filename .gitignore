@@ -1,5 +1,9 @@
 syllabus-summary-report.md
 implementation_plan.md
 
-Task4\backend\node_modules
-Task4\frontend\node_modules
+Task4/backend/node_modules/
+Task4/frontend/node_modules/
+
+Task4/backend/.env
+Task4/backend/package-lock.json
+Task4/frontend/package-lock.json

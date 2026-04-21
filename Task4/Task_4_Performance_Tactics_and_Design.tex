@@ -126,55 +126,93 @@ Trade-off summary:
     \item Alternative is simpler operationally but gives poorer user experience during long/failed evaluations.
 \end{itemize}
 
-\section{Quantification of NFRs (From Code/Config)}
+\section{Quantified NFRs (System-Level Constraints)}
 
-\subsection{NFR1: Performance (Response-Time-Oriented Controls)}
+The following NFRs are written as measurable constraints with units and acceptance checks.
 
-Measured/defined controls in implementation:
+\subsection{NFR1: Performance}
+
+System constraints:
 \begin{itemize}
-    \item \texttt{DOCKER\_TIMEOUT\_SEC} default: \texttt{10} seconds
-    \item \texttt{WORKER\_CONCURRENCY} default: \texttt{2}
-    \item Submissions list cache TTL (\texttt{SUBMISSIONS\_LIST\_CACHE\_TTL\_MS}): \texttt{8000} ms
-    \item Topics cache TTL (\texttt{QUESTION\_TOPICS\_CACHE\_TTL\_MS}): \texttt{60000} ms
-    \item API latency sampling window in monitor metrics: \texttt{5} minutes (runtime metrics snapshot)
+    \item Submission APIs return quickly because evaluation is asynchronous.
+    \item Hard evaluator time budget per run is limited by \texttt{DOCKER\_TIMEOUT\_SEC = 10s}.
+    \item Parallel evaluation capacity is \texttt{WORKER\_CONCURRENCY = 2}.
+    \item Read latency control via cache: submissions list TTL \texttt{8000 ms}, topics TTL \texttt{60000 ms}.
 \end{itemize}
 
-Interpretation:
+Quantified targets:
 \begin{itemize}
-    \item In current architecture, code evaluation timeout budget (\texttt{10s}) is not spent inside submission HTTP request path.
-    \item In synchronous alternative, each submission request can remain open up to evaluation timeout/failure duration.
+    \item API acknowledgement latency (\texttt{POST /api/submissions}, \texttt{POST /api/tests/\{id\}/submit}) p95 $\leq$ \texttt{500 ms} under normal local load (excluding DB/Redis outage).
+    \item Queue wait estimate reported by API follows:
+    \item \texttt{expectedQueueWaitSec = round(waiting * avgEvalMs / (workers * 1000))}
+    \item Per question evaluation wall-time must be $\leq$ \texttt{10s} timeout budget (or marked failed/timeout).
 \end{itemize}
 
-\subsection{NFR2: Security (Execution Isolation and Access Control)}
-
-Quantified controls in implementation:
+Acceptance checks:
 \begin{itemize}
-    \item Sandbox CPU limit: \texttt{1} core (\texttt{--cpus 1})
-    \item Sandbox memory limit: \texttt{256 MB} (\texttt{--memory 256m})
-    \item Sandbox network: disabled (\texttt{--network none})
-    \item Execution timeout: \texttt{10} seconds (default)
-    \item Public API exceptions under \texttt{/api}: only \texttt{POST /api/auth/signup} and \texttt{POST /api/auth/signin}
+    \item Verify p95 API latency from monitor snapshot (\texttt{/api/monitor/dashboard}).
+    \item Verify completed submissions expose \texttt{actualProcessingSeconds}.
 \end{itemize}
 
-Interpretation:
+\subsection{NFR2: Security}
+
+System constraints:
 \begin{itemize}
-    \item Security boundary is explicit and numerically constrained for untrusted code execution.
+    \item Untrusted code sandbox limits are fixed to CPU \texttt{1} core (\texttt{--cpus 1}), memory \texttt{256 MB} (\texttt{--memory 256m}), network disabled (\texttt{--network none}), timeout \texttt{10s}.
+    \item JWT validity window default is \texttt{24h}.
+    \item Public unauthenticated API surface is limited to \texttt{POST /api/auth/signup} and \texttt{POST /api/auth/signin}.
 \end{itemize}
 
-\subsection{NFR3: Reliability and NFR4: Availability}
-
-Quantified controls in implementation:
+Quantified targets:
 \begin{itemize}
-    \item Queue processing attempts per job: \texttt{2} (BullMQ \texttt{attempts: 2})
-    \item Retry backoff: exponential, base delay \texttt{1000} ms
-    \item Worker heartbeat interval default: \texttt{5000} ms
-    \item Worker stale threshold for readiness default: \texttt{30000} ms
-    \item \texttt{/health/ready} returns \texttt{503} if Mongo/Redis/worker readiness is not satisfied
+    \item \texttt{100\%} of endpoints under \texttt{/api} except the two auth endpoints require valid JWT.
+    \item \texttt{100\%} of code evaluations execute inside container with network disabled.
 \end{itemize}
 
-Interpretation:
+Acceptance checks:
 \begin{itemize}
-    \item Current design has built-in retry window and readiness detection, improving fault handling versus synchronous-only flow.
+    \item Route audit in app middleware and auth routes.
+    \item Docker command audit in evaluator runner for CPU/memory/network/timeout flags.
+\end{itemize}
+
+\subsection{NFR3: Reliability}
+
+System constraints:
+\begin{itemize}
+    \item Queue retry policy: attempts per job \texttt{2}, retry backoff exponential with base delay \texttt{1000 ms}.
+    \item Worker liveness telemetry: heartbeat interval \texttt{5000 ms}, stale threshold \texttt{30000 ms}.
+\end{itemize}
+
+Quantified targets:
+\begin{itemize}
+    \item Transient queue/worker failures should not cause immediate data loss because failed jobs get one retry window.
+    \item Read path degrades gracefully: if queue telemetry fails, submissions list still returns DB-backed response.
+\end{itemize}
+
+Acceptance checks:
+\begin{itemize}
+    \item Simulate queue telemetry failure and verify submissions API still responds successfully.
+    \item Verify failed jobs increment attempts and retry with configured backoff.
+\end{itemize}
+
+\subsection{NFR4: Availability}
+
+System constraints:
+\begin{itemize}
+    \item Readiness endpoint is strict dependency gate: \texttt{/health/ready} returns \texttt{503} when Mongo/Redis/worker readiness is not satisfied.
+    \item Liveness endpoint remains a process health check.
+\end{itemize}
+
+Quantified targets:
+\begin{itemize}
+    \item Readiness accuracy target: \texttt{100\%} dependency-aware status reporting.
+    \item Operational target: monthly availability $\geq$ \texttt{99.5\%} when dependencies are healthy.
+\end{itemize}
+
+Acceptance checks:
+\begin{itemize}
+    \item Stop Redis or worker and verify \texttt{/health/ready} returns \texttt{503}.
+    \item Restore dependencies and verify \texttt{/health/ready} returns \texttt{200}.
 \end{itemize}
 
 \section{Evidence Map (Key Files)}

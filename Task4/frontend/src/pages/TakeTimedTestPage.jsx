@@ -47,12 +47,69 @@ function formatRunTime(isoString) {
   return date.toLocaleTimeString();
 }
 
+function tryParseRunnerJson(rawValue) {
+  const text = String(rawValue || "").trim();
+  if (!text) {
+    return null;
+  }
+
+  try {
+    let parsed = JSON.parse(text);
+    if (typeof parsed === "string") {
+      const nested = parsed.trim();
+      const maybeNestedJson =
+        (nested.startsWith("{") && nested.endsWith("}")) ||
+        (nested.startsWith("[") && nested.endsWith("]"));
+      if (maybeNestedJson) {
+        parsed = JSON.parse(nested);
+      }
+    }
+    return parsed;
+  } catch (error) {
+    return null;
+  }
+}
+
+function formatNormalOutput(rawValue) {
+  if (rawValue == null) {
+    return "No output";
+  }
+
+  const parsed = tryParseRunnerJson(rawValue);
+  if (Array.isArray(parsed) && parsed.length > 0) {
+    const lines = parsed.map((item, index) => {
+      if (item && typeof item === "object") {
+        const expected = item.expected != null ? String(item.expected) : "-";
+        const actual = item.actual != null ? String(item.actual) : "-";
+        const passed = item.passed != null ? String(item.passed) : "-";
+        const stderr = item.stderr ? `, stderr: ${String(item.stderr)}` : "";
+        return `Case ${index + 1}: expected: ${expected}, actual: ${actual}, passed: ${passed}${stderr}`;
+      }
+      return `Case ${index + 1}: ${String(item)}`;
+    });
+    return lines.join("\n");
+  }
+
+  if (parsed && typeof parsed === "object") {
+    if (parsed.details) {
+      return String(parsed.details);
+    }
+    if (parsed.stdout) {
+      return String(parsed.stdout);
+    }
+    return String(rawValue).trim() || "No output";
+  }
+
+  const text = String(rawValue).trim();
+  return text || "No output";
+}
+
 function summarizeRunOutput(result) {
   if (result?.output?.details) {
-    return String(result.output.details);
+    return formatNormalOutput(result.output.details);
   }
   if (result?.output?.stdout) {
-    return String(result.output.stdout);
+    return formatNormalOutput(result.output.stdout);
   }
   return "No output";
 }
@@ -959,7 +1016,7 @@ function TakeTimedTestPage({ token }) {
                     <p>
                       <strong>Score:</strong> {sampleResult.score}
                     </p>
-                    <pre>{sampleResult.output?.details || sampleResult.output?.stdout || "No output"}</pre>
+                    <pre>{summarizeRunOutput(sampleResult)}</pre>
                   </div>
                 )}
 
@@ -984,7 +1041,9 @@ function TakeTimedTestPage({ token }) {
                               <td>{formatRunTime(entry.ranAt)}</td>
                               <td>{String(entry.passed)}</td>
                               <td>{entry.score}</td>
-                              <td className="run-history-output">{entry.details}</td>
+                              <td className="run-history-output" title={entry.details}>
+                                {summarizeResultDetails(entry.details)}
+                              </td>
                             </tr>
                           ))}
                         </tbody>

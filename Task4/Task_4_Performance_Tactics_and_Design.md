@@ -85,44 +85,83 @@ Trade-off summary:
 - Implemented architecture improves responsiveness and isolation for heavy workloads.
 - Alternative is simpler operationally but gives poorer user experience during long/failed evaluations.
 
-## 5) Quantification of NFRs (From Code/Config)
+## 5) Quantified NFRs (System-Level Constraints)
 
-### NFR1: Performance (Response-Time-Oriented Controls)
+The following NFRs are written as measurable constraints with units and acceptance checks.
 
-Measured/defined controls in implementation:
-- `DOCKER_TIMEOUT_SEC` default: `10` seconds
-- `WORKER_CONCURRENCY` default: `2`
-- Submissions list cache TTL (`SUBMISSIONS_LIST_CACHE_TTL_MS`): `8000` ms
-- Topics cache TTL (`QUESTION_TOPICS_CACHE_TTL_MS`): `60000` ms
-- API latency sampling window in monitor metrics: `5` minutes (runtime metrics snapshot)
+### NFR1: Performance
 
-Interpretation:
-- In current architecture, code evaluation timeout budget (`10s`) is not spent inside submission HTTP request path.
-- In synchronous alternative, each submission request can remain open up to evaluation timeout/failure duration.
+System constraints:
+- Submission APIs must return quickly because evaluation is asynchronous.
+- Hard evaluator time budget per run is limited by `DOCKER_TIMEOUT_SEC = 10s`.
+- Parallel evaluation capacity is `WORKER_CONCURRENCY = 2`.
+- Read latency control through cache:
+	- submissions list TTL: `8000 ms`
+	- topics TTL: `60000 ms`
 
-### NFR2: Security (Execution Isolation and Access Control)
+Quantified targets:
+- API acknowledgement latency (`POST /api/submissions`, `POST /api/tests/{id}/submit`) p95 <= `500 ms` under normal local load (excluding DB/Redis outage).
+- Queue wait estimate reported by API must follow:
+	- `expectedQueueWaitSec = round(waiting * avgEvalMs / (workers * 1000))`
+- Per question evaluation wall-time must be <= `10s` timeout budget (or marked failed/timeout).
 
-Quantified controls in implementation:
-- Sandbox CPU limit: `1` core (`--cpus 1`)
-- Sandbox memory limit: `256 MB` (`--memory 256m`)
-- Sandbox network: disabled (`--network none`)
-- Execution timeout: `10` seconds (default)
-- Public API exceptions under `/api`: only `POST /api/auth/signup` and `POST /api/auth/signin`
+Acceptance checks:
+- Verify p95 API latency from monitor snapshot (`/api/monitor/dashboard`).
+- Verify each completed submission has `actualProcessingSeconds` populated for completed jobs.
 
-Interpretation:
-- Security boundary is explicit and numerically constrained for untrusted code execution.
+### NFR2: Security
 
-### NFR3: Reliability and NFR4: Availability
+System constraints:
+- Untrusted code sandbox limits are fixed to:
+	- CPU: `1` core (`--cpus 1`)
+	- Memory: `256 MB` (`--memory 256m`)
+	- Network: disabled (`--network none`)
+	- Execution timeout: `10s`
+- JWT validity window default: `24h`.
+- Public unauthenticated API surface is limited to:
+	- `POST /api/auth/signup`
+	- `POST /api/auth/signin`
 
-Quantified controls in implementation:
-- Queue processing attempts per job: `2` (BullMQ `attempts: 2`)
-- Retry backoff: exponential, base delay `1000` ms
-- Worker heartbeat interval default: `5000` ms
-- Worker stale threshold for readiness default: `30000` ms
-- `/health/ready` returns `503` if Mongo/Redis/worker readiness is not satisfied
+Quantified targets:
+- `100%` of endpoints under `/api` except the two auth endpoints require valid JWT.
+- `100%` of code evaluations execute inside container with network disabled.
 
-Interpretation:
-- Current design has built-in retry window and readiness detection, improving fault handling versus synchronous-only flow.
+Acceptance checks:
+- Route audit in app middleware and auth routes.
+- Docker command audit in evaluator runner for CPU/memory/network/time flags.
+
+### NFR3: Reliability
+
+System constraints:
+- Queue retry policy:
+	- attempts per job: `2`
+	- retry backoff: exponential with base delay `1000 ms`
+- Worker liveness telemetry:
+	- heartbeat interval: `5000 ms`
+	- stale threshold: `30000 ms`
+
+Quantified targets:
+- Transient queue/worker failure should not cause immediate data loss because failed jobs get one retry window.
+- Read path must degrade gracefully: if queue telemetry fails, submissions list still returns DB-backed response.
+
+Acceptance checks:
+- Simulate queue telemetry failure and verify submissions API still responds successfully.
+- Verify failed jobs increment attempts and retry with configured backoff.
+
+### NFR4: Availability
+
+System constraints:
+- Readiness endpoint is strict dependency gate:
+	- `/health/ready` returns `503` when Mongo/Redis/worker readiness is not satisfied.
+- Liveness endpoint remains simple process health check.
+
+Quantified targets:
+- Readiness accuracy target: `100%` dependency-aware status reporting (ready only when all critical services are ready).
+- Operational target for deployment: monthly service availability >= `99.5%` for API process with dependencies healthy.
+
+Acceptance checks:
+- Stop Redis or worker and verify `/health/ready` returns `503`.
+- Restore dependencies and verify `/health/ready` returns `200`.
 
 ## 6) Evidence Map (Key Files)
 

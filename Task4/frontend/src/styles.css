@@ -501,7 +501,9 @@ button.secondary:hover {
 
 .run-history-output {
   max-width: 380px;
-  white-space: pre-wrap;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   word-break: break-word;
 }
 

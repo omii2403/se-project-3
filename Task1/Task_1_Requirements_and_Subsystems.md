@@ -26,6 +26,19 @@
 - NFR7 Observability: API and worker should emit structured logs and runtime telemetry for failures and latency.
 - NFR8 Freshness: Read cache must be invalidated on writes so updated submissions/topics are shown quickly.
 
+### Quantified System-Level Constraints (NFR Targets)
+
+| NFR | Metric | Target / Constraint | Acceptance Check |
+|---|---|---|---|
+| NFR1 Performance | Submission API acknowledgement latency | p95 <= 500 ms under normal load (evaluation offloaded to worker) | Monitor `/api/monitor/dashboard` latency snapshot |
+| NFR1 Performance | Evaluation time budget per question | hard timeout <= 10 s | Verify timeout behavior in evaluator logs/results |
+| NFR2 Security | Sandbox isolation | 100% code runs with `--cpus 1`, `--memory 256m`, `--network none` | Docker runner audit + sample executions |
+| NFR2 Security | API protection coverage | 100% `/api/*` protected except signup/signin | Route + middleware audit |
+| NFR3 Reliability | Queue retry policy | attempts = 2, exponential backoff delay = 1000 ms | Queue config inspection + retry test |
+| NFR4 Availability | Readiness dependency gate | `/health/ready` must return 503 when Mongo/Redis/worker unhealthy | Stop dependency and verify response |
+| NFR7 Observability | Runtime telemetry window | API latency and worker telemetry snapshots available in 5-min runtime window | `/api/monitor/dashboard` response check |
+| NFR8 Freshness | Read cache staleness control | submissions cache TTL 8000 ms, topics cache TTL 60000 ms | Verify TTL config + invalidation on writes |
+
 ## 2. Architecturally Significant Requirements
 
 ### ASR1 Safe Untrusted Code Execution

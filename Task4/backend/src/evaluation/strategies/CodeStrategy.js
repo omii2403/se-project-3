@@ -45,7 +45,11 @@ class CodeStrategy {
     let passCount = 0;
 
     for (const testCase of testCases) {
-      const runResult = await runCodeInDocker(submission.language, submission.code);
+      const runResult = await runCodeInDocker(
+        submission.language,
+        submission.code,
+        String(testCase.input || "")
+      );
       const actual = normalizeOutput(runResult.stdout);
       const expected = normalizeOutput(testCase.expectedOutput);
       const passed = runResult.exitCode === 0 && actual === expected;

@@ -296,9 +296,9 @@ function getQuestionTypeModal(type) {
     return {
       title: "SQL Question Instructions",
       notes: [
+        "Use the table name shown in the SQL table preview.",
         "Write one valid SQL query as your final answer.",
-        "Table CSV and expected output CSV are visible for reference.",
-        "Your query output is checked with expected CSV to mark correctness."
+        "Use Run Sample to check your query output before final submit."
       ]
     };
   }
@@ -311,6 +311,53 @@ function getQuestionTypeModal(type) {
       "Review marked options before final submission."
     ]
   };
+}
+
+function extractTableNameFromSql(sqlText) {
+  const match = String(sqlText || "").match(/\bfrom\s+([a-zA-Z_][a-zA-Z0-9_]*)/i);
+  if (!match) {
+    return "";
+  }
+
+  return String(match[1] || "").trim();
+}
+
+function resolveSqlTableName(question) {
+  const fromQuestion = String(question?.sqlTableName || "").trim();
+  if (fromQuestion) {
+    return fromQuestion;
+  }
+
+  const fromCorrectAnswer = extractTableNameFromSql(question?.correctAnswer || "");
+  if (fromCorrectAnswer) {
+    return fromCorrectAnswer;
+  }
+
+  return "students";
+}
+
+function parseCsvToGrid(csvText) {
+  const lines = String(csvText || "")
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) {
+    return { headers: [], rows: [] };
+  }
+
+  const headers = lines[0]
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const rows = lines.slice(1).map((line) => {
+    const cells = line.split(",").map((item) => item.trim());
+    return headers.map((_, index) => cells[index] || "");
+  });
+
+  return { headers, rows };
 }
 
 function TakeTimedTestPage({ token }) {
@@ -743,25 +790,47 @@ function TakeTimedTestPage({ token }) {
   async function handleRunSample(question) {
     const questionId = String(question._id || "");
     const draft = answers[questionId] || {};
-    const effectiveLanguage =
-      draft.language || question.languageHints?.[0] || "javascript";
+    const isCodeQuestion = question.type === "code";
+    const effectiveLanguage = draft.language || question.languageHints?.[0] || "javascript";
 
-    if (!draft.code || !effectiveLanguage) {
+    if (isCodeQuestion) {
+      if (!draft.code || !effectiveLanguage) {
+        setMessageColor("#b91c1c");
+        setMessage("Select language and write code before sample run.");
+        return;
+      }
+    } else if (question.type === "sql") {
+      if (!String(draft.answer || "").trim()) {
+        setMessageColor("#b91c1c");
+        setMessage("Write SQL query before sample run.");
+        return;
+      }
+    } else {
       setMessageColor("#b91c1c");
-      setMessage("Select language and write code before sample run.");
+      setMessage("Sample run is available only for code and sql questions.");
       return;
     }
 
     try {
-      const data = await runSampleTestCase(token, sessionId, {
-        questionId,
-        language: effectiveLanguage,
-        code: draft.code
-      });
+      const payload = isCodeQuestion
+        ? {
+            questionId,
+            language: effectiveLanguage,
+            code: draft.code
+          }
+        : {
+            questionId,
+            answer: String(draft.answer || "")
+          };
+
+      const data = await runSampleTestCase(token, sessionId, payload);
 
       setSampleResultByQuestion((prev) => ({
         ...prev,
-        [questionId]: data.result
+        [questionId]: {
+          ...(data.result || {}),
+          durationMs: Math.max(0, Number(data.durationMs || 0))
+        }
       }));
 
       setRunHistoryByQuestion((prev) => ({
@@ -771,14 +840,15 @@ function TakeTimedTestPage({ token }) {
             ranAt: new Date().toISOString(),
             passed: Boolean(data.result?.passed),
             score: Number(data.result?.score || 0),
-            details: summarizeRunOutput(data.result)
+            details: summarizeRunOutput(data.result),
+            durationMs: Math.max(0, Number(data.durationMs || 0))
           },
           ...(prev[questionId] || [])
         ].slice(0, 10)
       }));
 
       setMessageColor("#047857");
-      setMessage("Sample test run completed");
+      setMessage("Sample run completed");
     } catch (error) {
       setMessageColor("#b91c1c");
       setMessage(error.message);
@@ -909,19 +979,81 @@ function TakeTimedTestPage({ token }) {
 
             {question.type === "sql" && (
               <>
-                {String(question.sqlTableCsv || "").trim() && (
-                  <div className="subcard">
-                    <h4>Table CSV (Given)</h4>
-                    <pre>{String(question.sqlTableCsv || "")}</pre>
-                  </div>
-                )}
+                <div className="inline-form">
+                  <button
+                    type="button"
+                    onClick={() => void handleRunSample(question)}
+                    disabled={!isActive}
+                  >
+                    Run Sample
+                  </button>
+                </div>
 
-                {String(question.sqlExpectedOutputCsv || "").trim() && (
+                {String(question.sqlTableCsv || "").trim() && (() => {
+                  const tableName = resolveSqlTableName(question);
+                  const tableGrid = parseCsvToGrid(question.sqlTableCsv || "");
+
+                  return (
                   <div className="subcard">
-                    <h4>Expected Output CSV (Visible)</h4>
-                    <pre>{String(question.sqlExpectedOutputCsv || "")}</pre>
+                    <h4>SQL Table (Given)</h4>
+                    <p className="meta">Table name: {tableName}</p>
+                    <div className="table-wrap">
+                      <table className="question-table compact-table">
+                        <thead>
+                          <tr>
+                            {tableGrid.headers.map((header) => (
+                              <th key={`${questionId}-sql-header-${header}`}>{header}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tableGrid.rows.map((row, rowIndex) => (
+                            <tr key={`${questionId}-sql-row-${rowIndex}`}>
+                              {row.map((cell, cellIndex) => (
+                                <td key={`${questionId}-sql-cell-${rowIndex}-${cellIndex}`}>{cell}</td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                )}
+                  );
+                })()}
+
+                {String(question.sqlExpectedOutputCsv || "").trim() && (() => {
+                  const expectedGrid = parseCsvToGrid(question.sqlExpectedOutputCsv || "");
+
+                  return (
+                  <div className="subcard">
+                    <h4>Expected Output Table (Visible)</h4>
+                    <div className="table-wrap">
+                      <table className="question-table compact-table">
+                        <thead>
+                          <tr>
+                            {expectedGrid.headers.map((header) => (
+                              <th key={`${questionId}-sql-expected-header-${header}`}>{header}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {expectedGrid.rows.map((row, rowIndex) => (
+                            <tr key={`${questionId}-sql-expected-row-${rowIndex}`}>
+                              {row.map((cell, cellIndex) => (
+                                <td
+                                  key={`${questionId}-sql-expected-cell-${rowIndex}-${cellIndex}`}
+                                >
+                                  {cell}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  );
+                })()}
 
                 <Editor
                   height="220px"
@@ -938,6 +1070,22 @@ function TakeTimedTestPage({ token }) {
                 />
                 <p className="meta">Your SQL query output will be checked against expected CSV.</p>
                 <p className="meta">Tip: use Ctrl + / to toggle comments quickly.</p>
+
+                {sampleResult && (
+                  <div className="subcard">
+                    <h4>SQL Sample Run Output</h4>
+                    <p>
+                      <strong>Passed:</strong> {String(sampleResult.passed)}
+                    </p>
+                    <p>
+                      <strong>Score:</strong> {sampleResult.score}
+                    </p>
+                    <p>
+                      <strong>Time Taken:</strong> {Math.max(0, Number(sampleResult.durationMs || 0))} ms
+                    </p>
+                    <pre>{summarizeRunOutput(sampleResult)}</pre>
+                  </div>
+                )}
               </>
             )}
 
@@ -1016,6 +1164,9 @@ function TakeTimedTestPage({ token }) {
                     <p>
                       <strong>Score:</strong> {sampleResult.score}
                     </p>
+                    <p>
+                      <strong>Time Taken:</strong> {Math.max(0, Number(sampleResult.durationMs || 0))} ms
+                    </p>
                     <pre>{summarizeRunOutput(sampleResult)}</pre>
                   </div>
                 )}
@@ -1031,6 +1182,7 @@ function TakeTimedTestPage({ token }) {
                             <th>Time</th>
                             <th>Passed</th>
                             <th>Score</th>
+                            <th>Taken (ms)</th>
                             <th>Output</th>
                           </tr>
                         </thead>
@@ -1041,6 +1193,7 @@ function TakeTimedTestPage({ token }) {
                               <td>{formatRunTime(entry.ranAt)}</td>
                               <td>{String(entry.passed)}</td>
                               <td>{entry.score}</td>
+                              <td>{Math.max(0, Number(entry.durationMs || 0))}</td>
                               <td className="run-history-output" title={entry.details}>
                                 {summarizeResultDetails(entry.details)}
                               </td>
@@ -1118,6 +1271,7 @@ function TakeTimedTestPage({ token }) {
                     <th>Topic</th>
                     <th>Type</th>
                     <th>Score</th>
+                    <th>Time Taken</th>
                     <th>Passed</th>
                     <th>Review Notes</th>
                   </tr>
@@ -1136,6 +1290,7 @@ function TakeTimedTestPage({ token }) {
                         <td>{result.topic}</td>
                         <td>{result.type}</td>
                         <td>{result.score}</td>
+                        <td>{Math.max(0, Number(result.timeTakenMs || 0))} ms</td>
                         <td>{String(result.passed)}</td>
                         <td>{summarizeResultDetails(result.details)}</td>
                       </tr>

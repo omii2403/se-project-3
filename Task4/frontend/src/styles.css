@@ -486,6 +486,19 @@ button.secondary:hover {
   padding: 8px;
 }
 
+.option-item input {
+  width: auto;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.option-item span {
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
 .sample-tests ul {
   margin: 6px 0 0;
   padding-left: 18px;

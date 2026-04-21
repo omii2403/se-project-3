@@ -78,6 +78,20 @@ function tableNameFromQuery(query) {
   return match[1];
 }
 
+function resolveSqlTableName(question) {
+  const configured = String(question.sqlTableName || "").trim();
+  if (configured) {
+    return configured;
+  }
+
+  const fromCorrect = tableNameFromQuery(question.correctAnswer || "");
+  if (fromCorrect && fromCorrect !== "input_table") {
+    return fromCorrect;
+  }
+
+  return "students";
+}
+
 class SqlStrategy {
   async evaluate({ submission, question }) {
     const hasCsvExpected = String(question.sqlExpectedOutputCsv || "").trim().length > 0;
@@ -109,7 +123,7 @@ class SqlStrategy {
         };
       }
 
-      const tableName = tableNameFromQuery(query);
+      const tableName = resolveSqlTableName(question);
 
       try {
         const existing = alasql.tables[tableName];
@@ -131,11 +145,11 @@ class SqlStrategy {
           passed,
           score: passed ? 100 : 0,
           output: {
-            stdout: "",
+            stdout: actualCsv,
             stderr: "",
             details: passed
-              ? "SQL query output matched expected CSV"
-              : "SQL query output did not match expected CSV"
+              ? `SQL query output matched expected CSV (table: ${tableName})`
+              : `SQL query output did not match expected CSV (table: ${tableName})`
           }
         };
       } catch (error) {

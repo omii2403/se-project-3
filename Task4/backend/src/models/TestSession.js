@@ -18,7 +18,8 @@ const resultSchema = new mongoose.Schema(
     topic: { type: String, required: true },
     score: { type: Number, default: 0 },
     passed: { type: Boolean, default: false },
-    details: { type: String, default: "" }
+    details: { type: String, default: "" },
+    timeTakenMs: { type: Number, default: 0 }
   },
   { _id: false }
 );

@@ -381,9 +381,9 @@ router.post("/:sessionId/run-sample", requireAuth, async (req, res) => {
       return res.status(409).json({ error: "Session expired. Submit test to see your score." });
     }
 
-    const { questionId, language, code } = req.body;
-    if (!questionId || !language || !code) {
-      return res.status(400).json({ error: "questionId, language and code are required" });
+    const { questionId, language, code, answer } = req.body;
+    if (!questionId) {
+      return res.status(400).json({ error: "questionId is required" });
     }
 
     if (!isValidObjectId(questionId)) {
@@ -400,21 +400,50 @@ router.post("/:sessionId/run-sample", requireAuth, async (req, res) => {
     }
 
     const question = await Question.findById(questionId);
-    if (!question || question.type !== "code") {
-      return res.status(400).json({ error: "Sample run is supported only for coding questions" });
+    if (!question) {
+      return res.status(404).json({ error: "Question not found" });
     }
 
-    const strategy = createEvaluationStrategy("code");
-    const evalQuestion = {
-      ...question.toObject(),
-      testCases: Array.isArray(question.sampleTestCases) ? question.sampleTestCases : []
-    };
-    const result = await strategy.evaluate({
-      submission: { language, code },
-      question: evalQuestion
-    });
+    let result;
+    const sampleStartedAt = Date.now();
 
-    return res.json({ result });
+    if (question.type === "code") {
+      if (!language || !code) {
+        return res.status(400).json({
+          error: "questionId, language and code are required for coding sample run"
+        });
+      }
+
+      const strategy = createEvaluationStrategy("code");
+      const evalQuestion = {
+        ...question.toObject(),
+        testCases: Array.isArray(question.sampleTestCases) ? question.sampleTestCases : []
+      };
+
+      result = await strategy.evaluate({
+        submission: { language, code },
+        question: evalQuestion
+      });
+    } else if (question.type === "sql") {
+      if (!String(answer || "").trim()) {
+        return res.status(400).json({
+          error: "questionId and answer are required for SQL sample run"
+        });
+      }
+
+      const strategy = createEvaluationStrategy("sql");
+      result = await strategy.evaluate({
+        submission: { answer: String(answer || "") },
+        question
+      });
+    } else {
+      return res.status(400).json({
+        error: "Sample run is supported only for code and sql questions"
+      });
+    }
+
+    const durationMs = Date.now() - sampleStartedAt;
+    return res.json({ result, durationMs });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -528,6 +557,17 @@ router.post("/:sessionId/submit", requireAuth, async (req, res) => {
         submissionPayload.processedAt = new Date();
         submissionPayload.evaluationDurationMs = Date.now() - startedAt;
         submissionDocs.push(submissionPayload);
+
+        results.push({
+          questionId: question._id,
+          title: question.title,
+          type: question.type,
+          topic: question.topic,
+          score: 0,
+          passed: false,
+          details: "Question was not answered",
+          timeTakenMs: submissionPayload.evaluationDurationMs
+        });
         continue;
       }
 
@@ -572,7 +612,8 @@ router.post("/:sessionId/submit", requireAuth, async (req, res) => {
         topic: question.topic,
         score: result.score || 0,
         passed: Boolean(result.passed),
-        details: (result.output && result.output.details) || ""
+        details: (result.output && result.output.details) || "",
+        timeTakenMs: submissionPayload.evaluationDurationMs
       });
     }
 

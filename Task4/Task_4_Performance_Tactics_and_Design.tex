@@ -1,0 +1,201 @@
+\documentclass[12pt,journal,onecolumn]{IEEEtran}
+\usepackage{longtable}
+
+\begin{document}
+
+\title{Task 4: Prototype Implementation and Analysis}
+\author{Team 27}
+\maketitle
+
+\section{Prototype Scope}
+
+The prototype implements end-to-end non-trivial functionality for online interview preparation:
+
+\begin{itemize}
+    \item Role-based auth flow (student/admin)
+    \item Timed test lifecycle (start, session fetch, sample run, violation, final submit)
+    \item Async submission pipeline (API enqueue $\rightarrow$ worker evaluate $\rightarrow$ status update)
+    \item Admin management for questions and users
+    \item Student/admin analytics and monitoring endpoints
+\end{itemize}
+
+This satisfies the Task 4 requirement to demonstrate working architecture with significant end-to-end behavior.
+
+\section{Implemented Architecture (Current)}
+
+Current architecture pattern:
+\begin{itemize}
+    \item Modular monolith backend (Express + Mongoose modules)
+    \item Event-driven evaluation path using BullMQ worker
+    \item React frontend with role-protected routes
+    \item Redis for queue + telemetry storage
+    \item Docker sandbox for untrusted code execution
+    \item Local MongoDB URI by default (\texttt{mongodb://localhost:27017/interview\_platform})
+\end{itemize}
+
+Key backend modules in code:
+\begin{itemize}
+    \item \texttt{auth}, \texttt{users}, \texttt{questions}, \texttt{tests}, \texttt{submissions}, \texttt{analytics}, \texttt{monitor}, \texttt{evaluation}, \texttt{shared}
+\end{itemize}
+
+\section{Performance and Reliability Tactics Used}
+
+\subsection{Async queue decoupling}
+
+Files:
+\begin{itemize}
+    \item \texttt{backend/src/submissions/submissions.routes.js}
+    \item \texttt{backend/src/evaluation/queue.js}
+    \item \texttt{backend/src/worker.js}
+    \item \texttt{backend/src/evaluation/processSubmission.js}
+\end{itemize}
+
+Effect:
+\begin{itemize}
+    \item Submission API returns after persistence + enqueue (\texttt{202}), while heavy evaluation runs in worker.
+\end{itemize}
+
+\subsection{Cache-aside read path with invalidation}
+
+Files:
+\begin{itemize}
+    \item \texttt{backend/src/shared/summaryCache.js}
+    \item \texttt{backend/src/submissions/submissionReadService.js}
+    \item \texttt{backend/src/questions/questions.routes.js}
+\end{itemize}
+
+Effect:
+\begin{itemize}
+    \item Hot GET APIs (submissions list, topics, summaries) reuse cached payloads.
+    \item Write paths explicitly invalidate related cache keys.
+\end{itemize}
+
+\subsection{Startup warm-up for hot keys}
+
+Files:
+\begin{itemize}
+    \item \texttt{backend/src/shared/cacheWarmup.js}
+    \item \texttt{backend/src/server.js}
+\end{itemize}
+
+Effect:
+\begin{itemize}
+    \item Common read keys are loaded during startup to reduce cold-start read latency.
+\end{itemize}
+
+\subsection{Queue fallback for read reliability}
+
+File:
+\begin{itemize}
+    \item \texttt{backend/src/submissions/submissionReadService.js}
+\end{itemize}
+
+Effect:
+\begin{itemize}
+    \item If queue telemetry is unavailable, submissions list falls back to DB-only response instead of failing endpoint.
+\end{itemize}
+
+\section{Architecture Comparison}
+
+Compared architectures:
+
+\begin{enumerate}
+    \item Implemented: modular monolith + async worker queue
+    \item Alternative: modular monolith + synchronous in-request evaluation (no queue/worker split)
+\end{enumerate}
+
+\begin{longtable}{|p{3.2cm}|p{5.3cm}|p{5.3cm}|}
+\hline
+\textbf{Aspect} & \textbf{Implemented (Async Queue)} & \textbf{Alternative (Synchronous API Evaluation)} \\
+\hline
+Submission request path & Returns after DB + enqueue & Request waits for full evaluation \\
+\hline
+API responsiveness under long code runs & Better, because evaluation is off request path & Worse, because request remains open until evaluator finishes/fails \\
+\hline
+Failure isolation & Worker failure isolated from API request thread & Evaluation failure directly impacts API response path \\
+\hline
+Recovery control & Queue attempts + dead-letter queue & Mainly client retry behavior \\
+\hline
+Operational complexity & Higher (Redis + worker lifecycle) & Lower (fewer moving parts) \\
+\hline
+\end{longtable}
+
+Trade-off summary:
+\begin{itemize}
+    \item Implemented architecture improves responsiveness and isolation for heavy workloads.
+    \item Alternative is simpler operationally but gives poorer user experience during long/failed evaluations.
+\end{itemize}
+
+\section{Quantification of NFRs (From Code/Config)}
+
+\subsection{NFR1: Performance (Response-Time-Oriented Controls)}
+
+Measured/defined controls in implementation:
+\begin{itemize}
+    \item \texttt{DOCKER\_TIMEOUT\_SEC} default: \texttt{10} seconds
+    \item \texttt{WORKER\_CONCURRENCY} default: \texttt{2}
+    \item Submissions list cache TTL (\texttt{SUBMISSIONS\_LIST\_CACHE\_TTL\_MS}): \texttt{8000} ms
+    \item Topics cache TTL (\texttt{QUESTION\_TOPICS\_CACHE\_TTL\_MS}): \texttt{60000} ms
+    \item API latency sampling window in monitor metrics: \texttt{5} minutes (runtime metrics snapshot)
+\end{itemize}
+
+Interpretation:
+\begin{itemize}
+    \item In current architecture, code evaluation timeout budget (\texttt{10s}) is not spent inside submission HTTP request path.
+    \item In synchronous alternative, each submission request can remain open up to evaluation timeout/failure duration.
+\end{itemize}
+
+\subsection{NFR2: Security (Execution Isolation and Access Control)}
+
+Quantified controls in implementation:
+\begin{itemize}
+    \item Sandbox CPU limit: \texttt{1} core (\texttt{--cpus 1})
+    \item Sandbox memory limit: \texttt{256 MB} (\texttt{--memory 256m})
+    \item Sandbox network: disabled (\texttt{--network none})
+    \item Execution timeout: \texttt{10} seconds (default)
+    \item Public API exceptions under \texttt{/api}: only \texttt{POST /api/auth/signup} and \texttt{POST /api/auth/signin}
+\end{itemize}
+
+Interpretation:
+\begin{itemize}
+    \item Security boundary is explicit and numerically constrained for untrusted code execution.
+\end{itemize}
+
+\subsection{NFR3: Reliability and NFR4: Availability}
+
+Quantified controls in implementation:
+\begin{itemize}
+    \item Queue processing attempts per job: \texttt{2} (BullMQ \texttt{attempts: 2})
+    \item Retry backoff: exponential, base delay \texttt{1000} ms
+    \item Worker heartbeat interval default: \texttt{5000} ms
+    \item Worker stale threshold for readiness default: \texttt{30000} ms
+    \item \texttt{/health/ready} returns \texttt{503} if Mongo/Redis/worker readiness is not satisfied
+\end{itemize}
+
+Interpretation:
+\begin{itemize}
+    \item Current design has built-in retry window and readiness detection, improving fault handling versus synchronous-only flow.
+\end{itemize}
+
+\section{Evidence Map (Key Files)}
+
+\begin{itemize}
+    \item Auth gate and health: \texttt{backend/src/app.js}
+    \item Queue config: \texttt{backend/src/evaluation/queue.js}
+    \item Worker lifecycle: \texttt{backend/src/worker.js}
+    \item Evaluation strategies/factory: \texttt{backend/src/evaluation/strategies/*}, \texttt{backend/src/evaluation/strategyFactory.js}
+    \item Docker sandbox runner: \texttt{backend/src/evaluation/dockerRunner.js}
+    \item Cache core: \texttt{backend/src/shared/summaryCache.js}
+    \item Cache warm-up: \texttt{backend/src/shared/cacheWarmup.js}
+    \item Submission read path: \texttt{backend/src/submissions/submissionReadService.js}
+    \item Topics cache + invalidation: \texttt{backend/src/questions/questions.routes.js}
+    \item Monitor endpoint: \texttt{backend/src/monitor/monitor.routes.js}
+\end{itemize}
+
+\section{Conclusion}
+
+Task 4 prototype architecture is aligned with the implemented codebase and supports the core non-trivial workflow.
+
+Compared with synchronous in-request evaluation, the current async queue architecture gives stronger response-time behavior and better failure isolation, while introducing manageable infrastructure complexity.
+
+\end{document}

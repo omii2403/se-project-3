@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-Our platform lets students write and submit code in different languages like Python, C++ and Java. If we run this code directly on the server then there are big risks. A student might write an infinite loop or a program that eats all the memory. This will crash our server and affect everyone else using the platform. We also cannot control how much CPU or RAM a program uses without some kind of OS level isolation.
+Our platform lets students write and submit code in different languages like JavaScript, Python and C++. If we run this code directly on the server then there are big risks. A student might write an infinite loop or a program that eats all the memory. This will crash our server and affect everyone else using the platform. We also cannot control how much CPU or RAM a program uses without some kind of OS level isolation.
 
 So we need a way to run untrusted code safely without putting the main server at risk.
 
@@ -14,7 +14,6 @@ We will use Docker containers to run all student code. Every time a student subm
 - 1 CPU core only
 - 10 second timeout
 - No internet access inside the container
-- Filesystem is read only except the folder where code is placed
 
 After the code runs and output is collected the container is destroyed.
 

@@ -21,10 +21,13 @@ Module structure:
 ```
 src/
   auth/          # Authentication module
+  users/         # Admin user management module
   questions/     # Question management module
-  tests/         # Test generation module
+  tests/         # Timed test generation and session module
+  submissions/   # Async submission API module
   evaluation/    # Submission evaluation module
   analytics/     # Analytics and dashboard module
+  monitor/       # Monitoring API module
   shared/        # Common utilities, DB connection, middleware
   app.js         # Entry point that loads all modules
 ```

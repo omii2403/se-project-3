@@ -18,13 +18,13 @@ IEEE 42010 asks us to define stakeholders, their concerns and architecture views
 \hline
 \textbf{Stakeholder} & \textbf{Role} & \textbf{Key Concerns} \\
 \hline
-Students & Main users for practice tests and coding challenges & Simple UI, fast evaluation under 5 seconds, correct scoring, clear analytics \\
+Students & Main users for timed tests and practice & Simple test flow, fair anti-cheat handling, fast feedback, clear result summary \\
 \hline
-Administrators & Manage questions and test settings & Reliable question operations, smooth test setup, usage reports \\
+Administrators & Manage platform data and users & Reliable question/user management, monitoring visibility, clean role protection \\
 \hline
-Developers & Build and maintain system & Clear module boundaries, testable code, easy local setup \\
+Developers & Build and maintain prototype & Modular code boundaries, testability, clear APIs, low setup friction \\
 \hline
-University or Institution & Deployment owner & 99.5\% uptime, stable performance in placement season, data privacy, low infra cost \\
+Deployment Owner (Lab/Institution) & Runs service environment & Secure code execution, controlled infra cost, health visibility, recoverability \\
 \hline
 \end{longtable}
 
@@ -32,34 +32,42 @@ University or Institution & Deployment owner & 99.5\% uptime, stable performance
 
 \subsubsection{Logical Viewpoint}
 \begin{itemize}
-    \item View: Internal module split in one modular monolith app.
-    \item Main concerns: NFR6 maintainability, separation of concerns.
-    \item Stakeholders: Developers and administrators.
-    \item Summary: Auth, test management, evaluation and analytics are separate modules. Each module has its own routes, services and data layer. Modules interact through clear interfaces.
+    \item View: Internal module decomposition of one backend deployable unit.
+    \item Main concerns: Maintainability, role isolation, feature evolution.
+    \item Stakeholders: Developers, administrators.
+    \item Summary: Backend is organized into modules: auth, users, questions, tests, submissions, analytics, monitor, evaluation, shared. Frontend is route-separated for student and admin flows.
 \end{itemize}
 
 \subsubsection{Process Viewpoint}
 \begin{itemize}
-    \item View: Runtime flow for code submission to final result.
-    \item Main concerns: NFR1 performance, NFR2 load handling, fault isolation.
-    \item Stakeholders: Students and developers.
-    \item Summary: API receives submission, stores queued state and pushes job to queue. Worker picks job, runs code in sandbox and stores final output.
+    \item View: Runtime interaction flows for timed test and async submissions.
+    \item Main concerns: Performance, responsiveness, reliability.
+    \item Stakeholders: Students, developers.
+    \item Summary: Timed-test flow is session-based and validated server-side. Async submission flow uses queue + worker. API returns quickly after enqueue, worker updates result later.
 \end{itemize}
 
 \subsubsection{Deployment Viewpoint}
 \begin{itemize}
-    \item View: Container level deployment structure.
-    \item Main concerns: NFR4 availability, NFR2 scalability, cost control.
-    \item Stakeholders: University and developers.
-    \item Summary: App, worker, queue and MongoDB run as separate containers. Worker talks to Docker engine for isolated runtime containers. More worker containers can be added in peak time.
+    \item View: Node API + worker processes with external dependencies.
+    \item Main concerns: Setup simplicity, runtime isolation, operational clarity.
+    \item Stakeholders: Deployment owner, developers.
+    \item Summary: Backend API and worker are Node processes. Persistent data is in MongoDB (local Compass-compatible URI). Queue is Redis. Code execution isolation uses Docker runtime images per language.
 \end{itemize}
 
 \subsubsection{Security Viewpoint}
 \begin{itemize}
-    \item View: Authentication, authorization and code isolation.
-    \item Main concerns: NFR3 security.
-    \item Stakeholders: University, admins and students.
-    \item Summary: JWT handles stateless auth. Role checks protect admin routes. Sandbox container enforces memory, CPU and timeout limits.
+    \item View: API access control + sandbox safety boundaries.
+    \item Main concerns: Unauthorized access prevention, safe execution of untrusted code.
+    \item Stakeholders: Students, admins, deployment owner.
+    \item Summary: Global API auth gate protects all /api routes except signup/signin. Admin routes enforce role guard. Docker execution uses CPU, memory, timeout and network restrictions.
+\end{itemize}
+
+\subsubsection{Operational Viewpoint}
+\begin{itemize}
+    \item View: Health, logs, metrics and cache warm-up.
+    \item Main concerns: Incident detection, debugging speed, read latency.
+    \item Stakeholders: Developers, administrators.
+    \item Summary: Structured request logs, monitor endpoints, worker telemetry, readiness probes and startup cache warm-up are used to improve operations and response-time consistency.
 \end{itemize}
 
 \section{Major Design Decisions (ADR Summary)}
@@ -69,9 +77,9 @@ This task has five accepted ADRs.
 \subsection{ADR 001: Docker Containers for Code Execution}
 \begin{itemize}
     \item Status: Accepted
-    \item Why: User code is untrusted and can crash server.
-    \item Decision: Run each code submission in short lived Docker container with strict limits.
-    \item Effect: Strong isolation and better safety. Adds small startup delay.
+    \item Why: Student code is untrusted and must not run in API process.
+    \item Decision: Run code inside short-lived Docker containers with resource and network limits.
+    \item Effect: Better safety and fault isolation, with extra execution overhead.
 \end{itemize}
 
 Full record: \texttt{ADRs/ADR-001-Docker-Code-Execution.md}
@@ -79,9 +87,9 @@ Full record: \texttt{ADRs/ADR-001-Docker-Code-Execution.md}
 \subsection{ADR 002: Asynchronous Message Queue}
 \begin{itemize}
     \item Status: Accepted
-    \item Why: Code execution takes seconds and API must stay responsive.
-    \item Decision: API pushes job to queue. Worker processes it in background.
-    \item Effect: Fast API response and better spike handling. Needs retry and failure handling logic.
+    \item Why: Evaluation work is slower than normal API requests.
+    \item Decision: API enqueues submission jobs, worker processes jobs asynchronously.
+    \item Effect: Better API responsiveness and burst handling, with added queue/worker complexity.
 \end{itemize}
 
 Full record: \texttt{ADRs/ADR-002-Async-Message-Queue.md}
@@ -89,9 +97,9 @@ Full record: \texttt{ADRs/ADR-002-Async-Message-Queue.md}
 \subsection{ADR 003: Modular Monolith}
 \begin{itemize}
     \item Status: Accepted
-    \item Why: Team is small and timeline is short so microservices overhead is not practical.
+    \item Why: Team size and timeline favor lower operational complexity.
     \item Decision: One deployable app with clear internal modules and strict boundaries.
-    \item Effect: Easy deployment and easy local debugging. Independent module scaling is limited.
+    \item Effect: Easier debugging and onboarding, with less independent scaling than microservices.
 \end{itemize}
 
 Full record: \texttt{ADRs/ADR-003-Modular-Monolith.md}
@@ -99,9 +107,9 @@ Full record: \texttt{ADRs/ADR-003-Modular-Monolith.md}
 \subsection{ADR 004: JWT Stateless Authentication}
 \begin{itemize}
     \item Status: Accepted
-    \item Why: Need simple auth for student and admin roles.
-    \item Decision: Signed JWT token with expiry and role claims.
-    \item Effect: Fast auth checks and easy scaling across instances. Early token revoke is limited in prototype.
+    \item Why: Need role-aware auth without server-side session storage.
+    \item Decision: Signed JWT with expiry and role claims; middleware-based checks per route.
+    \item Effect: Fast auth checks and easy horizontal scale; early token revocation remains limited.
 \end{itemize}
 
 Full record: \texttt{ADRs/ADR-004-JWT-Authentication.md}
@@ -109,9 +117,9 @@ Full record: \texttt{ADRs/ADR-004-JWT-Authentication.md}
 \subsection{ADR 005: MongoDB for Primary Data Storage}
 \begin{itemize}
     \item Status: Accepted
-    \item Why: Need to store different question types and nested execution results with fast prototype development.
+    \item Why: Need flexible schema for mixed question types and nested execution outputs.
     \item Decision: Use MongoDB as primary document database with Mongoose validation.
-    \item Effect: Flexible schema and faster development. Data integrity checks must be handled in service logic.
+    \item Effect: Faster schema evolution during prototype stage, with application-level integrity checks.
 \end{itemize}
 
 Full record: \texttt{ADRs/ADR-005-MongoDB-Database-Selection.md}

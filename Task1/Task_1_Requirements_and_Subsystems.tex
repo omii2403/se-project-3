@@ -10,72 +10,96 @@
 
 \subsection{Functional Requirements}
 \begin{itemize}
-    \item FR1: The platform should allow students and admins to register, login and manage profile.
-    \item FR2: Students should select topic, question type and difficulty to create custom practice test.
-    \item FR3: System should create timed tests and avoid repeating same question for same user.
-    \item FR4: Student code should run in isolated sandbox container so main server stays safe.
-    \item FR5: After submission system should auto evaluate answers and show score in dashboard.
-    \item FR6: Admin should add, edit and delete questions in question bank.
+    \item FR1: The system must support signup, signin, token verify, profile read and profile update for students and admins.
+    \item FR2: All protected APIs must require valid JWT token. Admin-only APIs must reject student role.
+    \item FR3: Admin must be able to create, edit, deactivate and permanently delete questions.
+    \item FR4: Question bank must support three types: code, MCQ and SQL.
+    \item FR5: Student must be able to start timed tests with filters: topic(s), type, difficulty, count and duration.
+    \item FR6: Timed-test question selection should avoid repeated questions for the same student when enough unseen questions are available.
+    \item FR7: If enough unseen questions are not available, controlled repetition is allowed so test creation does not fail.
+    \item FR8: Student must be able to run sample test cases for coding questions during active timed session.
+    \item FR9: Timed test must record anti-cheat violations and auto-submit on second violation.
+    \item FR10: Final timed-test submit must evaluate answers, store submissions and return summary (attempted, passed, average score).
+    \item FR11: Async submission API must support idempotency key and queue status tracking.
+    \item FR12: Admin must be able to manage users/students (list, edit, delete with safety checks).
 \end{itemize}
 
 \subsection{Non Functional Requirements}
 \begin{itemize}
-    \item NFR1 Performance: Code evaluation result should come in 5 seconds for normal submissions. Pages should load in 2 seconds.
-    \item NFR2 Scalability: System should handle 1000 concurrent submissions without major slowdown.
-    \item NFR3 Security: Authentication should be token based. Code execution should have strict limits like 256 MB RAM and 1 CPU core.
-    \item NFR4 Availability: Platform should maintain 99.5\% uptime.
-    \item NFR5 Usability: Student should start a test in 3 clicks without training.
-    \item NFR6 Maintainability: System should be modular so one module change should not break others.
+    \item NFR1 Performance: Submission create API should return quickly by queuing jobs so evaluation is decoupled from request path.
+    \item NFR2 Security: Passwords must be hashed with bcrypt. Code execution must run in isolated Docker container with limits (1 CPU, 256 MB memory, no network, timeout).
+    \item NFR3 Reliability: Queue processing must support retries and dead-letter handling for final failures.
+    \item NFR4 Availability: Health endpoints must expose service readiness for MongoDB, Redis and worker heartbeat.
+    \item NFR5 Usability: Timed-test start flow should remain short and explicit, with checklist and warning messages for anti-cheat rules.
+    \item NFR6 Maintainability: Backend must stay modular (auth, users, questions, tests, submissions, analytics, monitor, evaluation, shared).
+    \item NFR7 Observability: API and worker should emit structured logs and runtime telemetry for failures and latency.
+    \item NFR8 Freshness: Read cache must be invalidated on writes so updated submissions/topics are shown quickly.
 \end{itemize}
 
 \section{Architecturally Significant Requirements}
 
 \subsection{ASR1 Secure Code Execution}
-Student code is untrusted input. If we run it directly then one bad code can crash full app. So we must run code in sandbox container with CPU, memory and timeout limits.
+Student code is untrusted input. It must execute inside sandbox containers so host API process remains protected.
 
 \subsection{ASR2 Async Submission Processing}
-Code compile and run takes time. If API thread waits for it then all other requests become slow. So API should only push job to queue and worker should process in background.
+Code evaluation is expensive. API path must enqueue and return immediately, while worker processes evaluation asynchronously.
 
-\subsection{ASR3 Clear Modular Boundaries}
-Project timeline is short and team size is five students. So modular monolith is practical. We keep auth, test, evaluation and analytics in separate modules with clear boundaries.
+\subsection{ASR3 Strong API Access Control}
+Role separation (student vs admin) must be enforced at API level, not only in frontend UI.
 
-\subsection{ASR4 Fast Student Feedback}
-Students need result quickly during practice. So queue wait time, worker speed and MongoDB query speed are key architecture points.
+\subsection{ASR4 Fast Read Path with Correctness}
+Hot read APIs (submissions list, topic list, summaries) need cache for speed, but invalidation must keep data fresh.
+
+\subsection{ASR5 Exam Integrity for Timed Tests}
+Violation tracking, auto-submit threshold and session ownership checks are critical for test integrity.
 
 \section{Subsystem Overview}
 
-The platform is one modular monolith application with internal modules. Heavy code execution is moved to worker process through queue.
+The platform is implemented as a modular monolith API + React frontend, with async worker for heavy evaluation.
 
-\subsection{Web Application Module}
+\subsection{Presentation Subsystem}
 \begin{itemize}
-    \item Web Frontend: Student and admin user interface.
-    \item Authentication Module: Registration, login, token creation and access control.
+    \item Frontend Pages: login/signup, student dashboard, student submissions, timed test pages, admin dashboard, admin users, admin questions, profile.
+    \item Role-aware Navigation: Student and admin pages are separated and route-protected.
 \end{itemize}
 
-\subsection{Test Management Module}
+\subsection{Identity and Access Subsystem}
 \begin{itemize}
-    \item Question Management: Add, update and remove coding, SQL and MCQ questions.
-    \item Test Generation: Build timed test by topic, type and difficulty.
+    \item Auth Module: signup/signin/verify/profile with JWT and bcrypt.
+    \item Users Module: admin user management with role filter and safety protections.
 \end{itemize}
 
-\subsection{Evaluation Module}
+\subsection{Test and Question Subsystem}
 \begin{itemize}
-    \item Submission Evaluator: Detect submission type and call correct evaluator.
-    \item Code Worker: Pick queued jobs and run code in sandbox container.
-    \item SQL Evaluator: Run SQL answer on sample database and compare expected output.
-    \item Message Queue: Hold jobs and smooth traffic spike.
+    \item Questions Module: CRUD for code/MCQ/SQL with topic APIs and role-based sanitization.
+    \item Timed Tests Module: test generation/start/session/violation/sample-run/final-submit with no-repeat preference and fallback.
 \end{itemize}
 
-\subsection{Analytics Module}
+\subsection{Evaluation and Queue Subsystem}
 \begin{itemize}
-    \item Analytics Engine: Calculate score and weak topic trends.
-    \item Student Dashboard: Show attempts, scores and progress.
-    \item Admin Console: Show usage and performance reports.
+    \item Strategy-based Evaluators: code, MCQ, SQL strategies.
+    \item Queue Layer: BullMQ queue with retries and dead-letter queue.
+    \item Worker Process: async job execution and telemetry updates.
 \end{itemize}
 
-\subsection{Shared Data Layer}
+\subsection{Analytics and Monitoring Subsystem}
 \begin{itemize}
-    \item MongoDB Database: Store users, questions, tests, submissions and analytics data.
+    \item Analytics Module: student summary and admin overview.
+    \item Monitor Module: API latency, queue metrics, worker metrics.
+    \item Health Module: liveness and readiness endpoints.
+\end{itemize}
+
+\subsection{Data and Cache Subsystem}
+\begin{itemize}
+    \item MongoDB + Mongoose: users, questions, test sessions, submissions, violation audits.
+    \item In-memory Read Cache: summaries, submissions list, topics with warm-up and invalidation.
+\end{itemize}
+
+\subsection{Runtime Dependencies}
+\begin{itemize}
+    \item Local MongoDB instance (Compass compatible URI) for persistent data.
+    \item Redis for queue and queue metrics.
+    \item Docker engine for sandboxed code execution containers.
 \end{itemize}
 
 \end{document}

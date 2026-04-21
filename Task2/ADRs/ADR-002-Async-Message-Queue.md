@@ -17,7 +17,7 @@ We will put a message queue between the API server and the code execution worker
 
 ## Consequences
 **What becomes easier:**
-- API always responds fast (around 50 ms) no matter how heavy the code evaluation load is.
+- API responds quickly for submission creation because evaluation runs in worker path.
 - If too many submissions come at once they just wait in the queue instead of crashing the server.
 - During placement season we can add more worker processes to handle the extra load.
 

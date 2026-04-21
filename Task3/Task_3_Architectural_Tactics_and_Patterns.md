@@ -2,251 +2,180 @@
 
 ## 1. Goal and Scope
 
-This document explains how our architecture satisfies NFR1 to NFR6 for the coding practice platform.
+This document maps implemented architecture tactics and design patterns to non-functional requirements (NFRs) from Task 1.
 
-MongoDB is selected as primary data storage as per ADR 005 in Task 2.
+The focus is only on what is currently implemented in the prototype codebase (Task4 backend and frontend), without planned-only items.
 
-It includes:
-- practical implementation plan
-- architectural tactics mapped to NFRs
-- two implementation patterns
-- diagram references with image files
+## 2. Implemented Architectural Tactics
 
-## 2. Implementation Plan for All NFRs
+### Tactic 1: Asynchronous Submission Processing (Queue + Worker)
 
-### NFR1 Performance
-Target:
-- code evaluation result in 5 seconds for normal case
-- page response in 2 seconds
+What is implemented:
+- Submission API stores request as `QUEUED` and pushes job to BullMQ queue.
+- Worker consumes jobs and updates lifecycle (`QUEUED -> RUNNING -> COMPLETED/FAILED`).
+- Queue status endpoint provides waiting/active/completed/failed counts.
 
-Implementation:
-1. Use async pipeline. API pushes job to queue and worker handles execution.
-2. Cache question metadata and dashboard summary for short time.
-3. Add MongoDB indexes on user_id, test_id, submission_id and created_at.
-4. Keep baseline warm workers to reduce startup delay.
-5. Keep clear timeout for API calls and code execution.
+Code evidence:
+- `Task4/backend/src/submissions/submissions.routes.js`
+- `Task4/backend/src/evaluation/queue.js`
+- `Task4/backend/src/worker.js`
+- `Task4/backend/src/evaluation/processSubmission.js`
 
-Why it works:
-- API thread does not wait for compile or run
-- cache and MongoDB indexes reduce repeated query load
-- warm workers reduce end to end delay
+NFR mapping:
+- NFR1 Performance: request path is short because evaluation runs in worker.
+- NFR3 Reliability: retries and dead-letter queue are configured for failure handling.
+- NFR4 Availability: heavy evaluation does not block normal API requests.
 
-Check metrics:
-- p95 API latency under 2 seconds
-- p95 evaluation completion under 5 seconds
+Trade-off:
+- Better responsiveness, but added operational complexity (Redis + worker + queue monitoring).
 
-### NFR2 Scalability
-Target:
-- handle 1000 concurrent submissions
+### Tactic 2: Sandboxed Code Execution with Resource Limits
 
-Implementation:
-1. Scale app instances and worker instances horizontally.
-2. Separate queue routing by job type like code, SQL and MCQ.
-3. Auto scale worker count based on queue depth and CPU.
-4. Use MongoDB connection pooling and move heavy analytics to background jobs.
-5. Add backpressure using per user rate limits during overload.
+What is implemented:
+- Code submissions are executed inside Docker containers.
+- Runtime limits are enforced with `--cpus 1`, `--memory 256m`, `--network none`, and timeout handling.
 
-Why it works:
-- queue absorbs spike traffic
-- workers can be added without code change
-- backpressure prevents full system collapse
+Code evidence:
+- `Task4/backend/src/evaluation/dockerRunner.js`
 
-Check metrics:
-- stable p95 latency under load test
-- no major error spike at peak load
+NFR mapping:
+- NFR2 Security: untrusted code is isolated from API process and host network.
+- NFR3 Reliability: timeouts and limits reduce risk of runaway execution.
 
-### NFR3 Security
-Target:
-- token based authentication
-- sandbox execution with 256 MB RAM and 1 CPU core limits
+Trade-off:
+- Strong safety, but extra startup and execution overhead compared to in-process execution.
 
-Implementation:
-1. JWT based auth with role checks for admin routes.
-2. Password hash using bcrypt or Argon2.
-3. Run code in isolated container with CPU, RAM and timeout limits.
-4. Disable container network unless needed.
-5. Add request validation, login rate limit and audit logging.
+### Tactic 3: Cache-Aside Read Path with Invalidation and Warm-Up
 
-Why it works:
-- unauthorized access is blocked by token and role check
-- untrusted code stays inside sandbox boundary
-- rate limit and input validation reduce abuse
+What is implemented:
+- Hot read APIs use in-memory cache (`submissions list`, `question topics`, summaries).
+- Cache invalidation runs on relevant write operations.
+- Startup warm-up preloads selected caches.
 
-Check metrics:
-- all protected routes require valid token
-- all code jobs run with enforced resource limits
+Code evidence:
+- `Task4/backend/src/shared/summaryCache.js`
+- `Task4/backend/src/submissions/submissionReadService.js`
+- `Task4/backend/src/questions/questions.routes.js`
+- `Task4/backend/src/shared/cacheWarmup.js`
+- `Task4/backend/src/server.js`
 
-### NFR4 Availability
-Target:
-- 99.5 percent uptime
+NFR mapping:
+- NFR1 Performance: repeated reads are served faster.
+- NFR8 Freshness: explicit invalidation keeps cache aligned after writes.
 
-Implementation:
-1. Keep multiple app and worker instances.
-2. Use health checks and auto restart for unhealthy instance.
-3. Use bounded retry with exponential backoff.
-4. Use circuit breaker for unstable dependencies.
-5. Keep backup, restore drill and incident runbook.
+Trade-off:
+- Better read speed, but requires careful invalidation to avoid stale responses.
 
-Why it works:
-- no single instance failure should stop system
-- retries handle temporary errors
-- circuit breaker prevents cascading timeout
+### Tactic 4: Centralized API Authentication + Role-Based Authorization
 
-Check metrics:
-- monthly uptime at or above 99.5 percent
-- restore drill success rate in planned tests
+What is implemented:
+- Global middleware on `/api` enforces authentication except signup/signin.
+- Admin-only routes use role guard middleware.
+- User management routes include safety constraints (cannot self-delete, seed admin protections).
 
-### NFR5 Usability
-Target:
-- student should start test in 3 clicks
+Code evidence:
+- `Task4/backend/src/app.js`
+- `Task4/backend/src/shared/middleware/requireAuth.js`
+- `Task4/backend/src/shared/middleware/requireRole.js`
+- `Task4/backend/src/users/users.routes.js`
 
-Implementation:
-1. Keep start flow simple: select config, start test, answer question.
-2. Keep same layout style in student and admin panels.
-3. Show inline validation and clear loading state.
-4. Keep keyboard access and mobile friendly layout.
-5. Run small user testing with first time users.
+NFR mapping:
+- NFR2 Security: protected APIs are not accessible without valid token/role.
+- NFR6 Maintainability: centralized gate reduces repeated route-level security code.
 
-Why it works:
-- low click count reduces friction
-- clear feedback reduces user confusion
+Trade-off:
+- Clear and consistent access control, but route exceptions must be maintained carefully.
 
-Check metrics:
-- test start success above 90 percent for new users
-- average clicks to start test at or below 3
+### Tactic 5: Runtime Observability (Health + Metrics + Structured Logs)
 
-### NFR6 Maintainability
-Target:
-- one module change should have minimal impact on others
+What is implemented:
+- Health endpoints expose liveness and readiness for MongoDB, Redis and worker heartbeat.
+- Runtime metrics include API latency samples and worker queue/evaluation telemetry.
+- Admin monitor dashboard endpoint aggregates API, queue and worker data.
 
-Implementation:
-1. Keep modular monolith boundaries: auth, test, evaluation and analytics.
-2. Keep layered structure inside each module: controller, service and repository.
-3. Keep versioned API and message contracts.
-4. Add unit tests, integration tests and CI quality checks.
-5. Keep ADR docs and structured logs.
+Code evidence:
+- `Task4/backend/src/app.js`
+- `Task4/backend/src/shared/runtimeMetrics.js`
+- `Task4/backend/src/shared/workerTelemetry.js`
+- `Task4/backend/src/monitor/monitor.routes.js`
 
-Why it works:
-- module boundaries reduce side effects
-- contract first approach reduces integration break
-- tests catch regressions early
+NFR mapping:
+- NFR4 Availability: readiness checks support faster failure detection.
+- NFR7 Observability: metrics/logs make production debugging easier.
 
-Check metrics:
-- lower change failure rate
-- stable CI pass trend
+Trade-off:
+- Better operability, but extra telemetry code and storage overhead.
 
-## 3. Architectural Tactics
+## 3. Implementation Patterns
 
-### Tactic 1: Asynchronous Queue Processing
-- Description: API publishes submission jobs and workers process in background.
-- NFR mapping: NFR1, NFR2, NFR4.
-- Reason: Decouples heavy processing from request path.
+### Pattern 1: Strategy Pattern (Evaluation Logic)
 
-### Tactic 2: Sandbox Isolation
-- Description: Execute code in isolated container with strict limits.
-- NFR mapping: NFR3, NFR4.
-- Reason: Untrusted code cannot impact host system.
+Role in system:
+- Evaluation logic is split by question type:
+	- `CodeStrategy`
+	- `McqStrategy`
+	- `SqlStrategy`
+- Each strategy implements its own `evaluate` behavior.
 
-### Tactic 3: Caching and Query Optimization
-- Description: Cache hot reads and tune MongoDB indexes and queries.
-- NFR mapping: NFR1, NFR2.
-- Reason: Reduces repeated expensive query work.
+Code evidence:
+- `Task4/backend/src/evaluation/strategies/CodeStrategy.js`
+- `Task4/backend/src/evaluation/strategies/McqStrategy.js`
+- `Task4/backend/src/evaluation/strategies/SqlStrategy.js`
+- `Task4/backend/src/evaluation/processSubmission.js`
 
-### Tactic 4: Retry, Circuit Breaker and Health Checks
-- Description: Use bounded retry, failure isolation and automated health monitoring.
-- NFR mapping: NFR4, NFR2.
-- Reason: Prevents cascading failures during dependency issues.
-
-### Tactic 5: Modular Monolith with Stable Contracts
-- Description: Keep clear module boundaries and stable interfaces.
-- NFR mapping: NFR6, NFR2, NFR5.
-- Reason: Easier updates, better team parallel work and safer integration.
-
-## 4. Implementation Patterns
-
-### Pattern 1: Strategy Pattern
-Role in architecture:
-- EvaluationController selects strategy based on submission type.
-- MCQStrategy, SQLStrategy and CodeStrategy keep logic separate.
-- New evaluator can be added without changing core controller flow.
-
-Why this pattern:
-- avoids large conditional blocks
-- easy extension for new question types
-- unit testing is easy because each strategy is isolated
+Why this pattern fits:
+- Prevents one large conditional block for all question types.
+- Makes each evaluator easier to test and evolve independently.
 
 Diagram:
-<img src="diagrams/task3-uml-strategy.png" alt="Task 3 UML strategy pattern" width="70%" />
+![Task 3 UML strategy pattern](diagrams/task3-uml-strategy.png)
 
 Diagram source: [diagrams/task3-uml-strategy.mmd](diagrams/task3-uml-strategy.mmd)
 
-### Pattern 2: Factory Method Pattern
-Role in architecture:
-- StrategyFactory creates evaluator objects.
-- Controller asks factory and does not create concrete classes directly.
-- If new evaluator type is added only factory mapping changes.
+### Pattern 2: Factory Method Pattern (Strategy Creation)
 
-Why this pattern:
-- central creation logic
-- lower coupling between controller and concrete classes
+Role in system:
+- `createEvaluationStrategy(type)` creates concrete strategy instance based on question type.
+- Processing pipeline depends on abstraction (`strategy.evaluate`) instead of direct class construction in multiple places.
+
+Code evidence:
+- `Task4/backend/src/evaluation/strategyFactory.js`
+- `Task4/backend/src/evaluation/processSubmission.js`
+
+Why this pattern fits:
+- Centralizes creation logic for evaluators.
+- Adding a new evaluator type mainly affects one mapping point.
 
 Diagram:
-<img src="diagrams/task3-uml-factory.png" alt="Task 3 UML factory pattern" width="50%" />
+![Task 3 UML factory pattern](diagrams/task3-uml-factory.png)
 
 Diagram source: [diagrams/task3-uml-factory.mmd](diagrams/task3-uml-factory.mmd)
 
-## 5. Architectural Patterns Used in System
+## 4. Architecture Pattern Context
 
-### 5.1 Client Server Pattern
-- Use: Browser clients call backend APIs.
-- Why fit: UI and business logic stay separate.
-- NFR impact: NFR5, NFR6.
+### 4.1 Modular Monolith
+- Single backend deployable with clear internal modules (`auth`, `users`, `questions`, `tests`, `submissions`, `evaluation`, `analytics`, `monitor`).
+- Fits team size and prototype delivery timeline.
 
-### 5.2 Layered Architecture Pattern
-- Use: API layer, service layer and data layer in each module.
-- Why fit: Easier change and easier testing.
-- NFR impact: NFR6, NFR3.
+### 4.2 Event-Driven Worker Flow
+- Submission processing is event/job driven through BullMQ queue and worker consumers.
+- Decouples request-response API from evaluation execution path.
 
-### 5.3 MVC Pattern in Frontend
-- Use: View for UI, controller for actions, model for state.
-- Why fit: UI changes do not break data logic.
-- NFR impact: NFR5, NFR6.
+## 5. NFR to Tactic Traceability Matrix
 
-### 5.4 Event Driven Pattern
-- Use: Submission events go to queue and workers consume jobs.
-- Why fit: Better burst handling and low coupling.
-- NFR impact: NFR1, NFR2, NFR4.
+| NFR | Main Tactics | Evidence |
+|---|---|---|
+| NFR1 Performance | Async queue, cache-aside reads | submissions routes, queue/worker, submissionReadService |
+| NFR2 Security | Auth gate, role checks, Docker sandbox | app.js auth middleware, requireRole, dockerRunner |
+| NFR3 Reliability | Queue retries, dead-letter queue, execution timeout | queue.js, worker.js, dockerRunner.js |
+| NFR4 Availability | Readiness endpoints, worker heartbeat metrics | app.js health endpoints, workerTelemetry |
+| NFR6 Maintainability | Modular monolith boundaries, strategy + factory separation | module structure, strategyFactory, strategies |
+| NFR7 Observability | Structured request logs, monitor dashboard, telemetry snapshots | app.js logger, monitor.routes, runtimeMetrics |
+| NFR8 Freshness | Cache invalidation on write paths | summaryCache + submissions/questions write handlers |
 
-### 5.5 Modular Monolith Pattern
-- Use: Single deployable app with strict module boundaries.
-- Why fit: Less ops complexity for current team size and timeline.
-- NFR impact: NFR6, NFR2, NFR4.
+## 6. Diagram References
 
-## 6. System Diagrams
-
-### 6.1 C4 Style Container View
+### C4-style Container View
 ![Task 3 C4 container view](diagrams/task3-c4-container.png)
 
 Diagram source: [diagrams/task3-c4-container.mmd](diagrams/task3-c4-container.mmd)
-
-## 7. NFR to Tactic Traceability Matrix
-
-| NFR | Main Tactics | Supporting Patterns |
-|---|---|---|
-| NFR1 Performance | Async queue, caching, MongoDB tuning | Event Driven and Strategy |
-| NFR2 Scalability | Horizontal scaling, queue routing, backpressure | Event Driven and Modular Monolith |
-| NFR3 Security | Sandbox, token auth, rate limiting | Layered Architecture and Strategy |
-| NFR4 Availability | Redundancy, retry, circuit breaker, health checks | Event Driven and Modular Monolith |
-| NFR5 Usability | Simple flow, consistent UI, clear feedback | MVC and Client Server |
-| NFR6 Maintainability | Modular boundaries, stable contracts, CI checks | Layered Architecture with Strategy and Factory Method |
-
-## 8. Recommended Implementation Order
-
-1. Build auth and sandbox baseline first.
-2. Add queue pipeline and worker pool.
-3. Add reliability controls like retry and circuit breaker.
-4. Add cache and MongoDB optimization.
-5. Improve UX flow and run user testing.
-6. Strengthen CI, tests and documentation.
-
-This sequence reduces security risk first then improves speed, scale and long term maintainability.

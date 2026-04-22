@@ -175,6 +175,11 @@ Diagram source: [diagrams/task3-uml-factory.mmd](diagrams/task3-uml-factory.mmd)
 
 ## 6. Diagram References
 
+### C4 System Context View
+![Task 3 C4 system context view](diagrams/task3-c4-system-context.png)
+
+Diagram source: [diagrams/task3-c4-system-context.mmd](diagrams/task3-c4-system-context.mmd)
+
 ### C4-style Container View
 ![Task 3 C4 container view](diagrams/task3-c4-container.png)
 

@@ -1,0 +1,17 @@
+flowchart LR
+    student[Student]
+    admin[Admin]
+    ops[Deployment Owner]
+    browser[Web Browser]
+    system[[Interview Preparation Platform]]
+    mongo[(MongoDB)]
+    redis[(Redis)]
+    docker[(Docker Engine)]
+
+    student --> browser
+    admin --> browser
+    browser --> system
+    ops --> system
+    system --> mongo
+    system --> redis
+    system --> docker

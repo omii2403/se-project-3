@@ -186,10 +186,12 @@ What is implemented:
 - Queue status endpoint provides waiting/active/completed/failed counts.
 
 Code evidence:
-- Task4/backend/src/submissions/submissions.routes.js
-- Task4/backend/src/evaluation/queue.js
-- Task4/backend/src/worker.js
-- Task4/backend/src/evaluation/processSubmission.js
+```text
+Task4/backend/src/submissions/submissions.routes.js
+Task4/backend/src/evaluation/queue.js
+Task4/backend/src/worker.js
+Task4/backend/src/evaluation/processSubmission.js
+```
 
 NFR mapping:
 - NFR1 Performance: request path is short because evaluation runs in worker.
@@ -206,7 +208,9 @@ What is implemented:
 - Runtime limits are enforced with --cpus 1, --memory 256m, --network none, and timeout handling.
 
 Code evidence:
-- Task4/backend/src/evaluation/dockerRunner.js
+```text
+Task4/backend/src/evaluation/dockerRunner.js
+```
 
 NFR mapping:
 - NFR2 Security: untrusted code is isolated from API process and host network.
@@ -223,11 +227,13 @@ What is implemented:
 - Startup warm-up preloads selected caches.
 
 Code evidence:
-- Task4/backend/src/shared/summaryCache.js
-- Task4/backend/src/submissions/submissionReadService.js
-- Task4/backend/src/questions/questions.routes.js
-- Task4/backend/src/shared/cacheWarmup.js
-- Task4/backend/src/server.js
+```text
+Task4/backend/src/shared/summaryCache.js
+Task4/backend/src/submissions/submissionReadService.js
+Task4/backend/src/questions/questions.routes.js
+Task4/backend/src/shared/cacheWarmup.js
+Task4/backend/src/server.js
+```
 
 NFR mapping:
 - NFR1 Performance: repeated reads are served faster.
@@ -244,10 +250,12 @@ What is implemented:
 - User management routes include safety constraints such as self-delete prevention and seed-admin protection.
 
 Code evidence:
-- Task4/backend/src/app.js
-- Task4/backend/src/shared/middleware/requireAuth.js
-- Task4/backend/src/shared/middleware/requireRole.js
-- Task4/backend/src/users/users.routes.js
+```text
+Task4/backend/src/app.js
+Task4/backend/src/shared/middleware/requireAuth.js
+Task4/backend/src/shared/middleware/requireRole.js
+Task4/backend/src/users/users.routes.js
+```
 
 NFR mapping:
 - NFR2 Security: protected APIs are not accessible without valid token/role.
@@ -264,10 +272,12 @@ What is implemented:
 - Admin monitor dashboard endpoint aggregates API, queue, and worker data.
 
 Code evidence:
-- Task4/backend/src/app.js
-- Task4/backend/src/shared/runtimeMetrics.js
-- Task4/backend/src/shared/workerTelemetry.js
-- Task4/backend/src/monitor/monitor.routes.js
+```text
+Task4/backend/src/app.js
+Task4/backend/src/shared/runtimeMetrics.js
+Task4/backend/src/shared/workerTelemetry.js
+Task4/backend/src/monitor/monitor.routes.js
+```
 
 NFR mapping:
 - NFR4 Availability: readiness checks support faster failure detection.
@@ -285,10 +295,12 @@ Role in system:
 - Each strategy implements its own evaluate behavior.
 
 Code evidence:
-- Task4/backend/src/evaluation/strategies/CodeStrategy.js
-- Task4/backend/src/evaluation/strategies/McqStrategy.js
-- Task4/backend/src/evaluation/strategies/SqlStrategy.js
-- Task4/backend/src/evaluation/processSubmission.js
+```text
+Task4/backend/src/evaluation/strategies/CodeStrategy.js
+Task4/backend/src/evaluation/strategies/McqStrategy.js
+Task4/backend/src/evaluation/strategies/SqlStrategy.js
+Task4/backend/src/evaluation/processSubmission.js
+```
 
 Why this pattern fits:
 - Prevents one large conditional block for all question types.
@@ -306,8 +318,10 @@ Role in system:
 - The processing pipeline depends on the abstraction (strategy.evaluate) instead of direct class construction in multiple places.
 
 Code evidence:
-- Task4/backend/src/evaluation/strategyFactory.js
-- Task4/backend/src/evaluation/processSubmission.js
+```text
+Task4/backend/src/evaluation/strategyFactory.js
+Task4/backend/src/evaluation/processSubmission.js
+```
 
 Why this pattern fits:
 - Centralizes creation logic for evaluators.

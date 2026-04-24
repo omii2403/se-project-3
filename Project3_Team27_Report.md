@@ -580,5 +580,5 @@ Compared with synchronous in-request evaluation, the current async queue archite
 | Om Mehra (2025201008) | Task 1 | JWT auth flow (signup/signin/verify), global auth middleware, role guard, admin user management API, User model, users integration test |
 | Akshat Kotadia (2025201005) | Task 2 | Docker sandbox runner, async evaluation pipeline, BullMQ queue/worker, evaluation strategies (Code, MCQ, SQL), dead-letter routing, idempotency test |
 | Parv Shah (2025201093) | Task 3 | Question bank CRUD API, topic caching, timed test session lifecycle, anti-cheat violation tracking, test builder and live test frontend pages |
-| Hardik (2025201046) | Task 3 | Submission read service with cache-aside, student/admin analytics aggregations, monitor dashboard, runtime metrics, worker telemetry, cache warm-up |
+| Hardik Kothari (2025201046) | Task 3 | Submission read service with cache-aside, student/admin analytics aggregations, monitor dashboard, runtime metrics, worker telemetry, cache warm-up |
 | Gaurav Patel (2025201065) | Task 3 | React app structure, auth/student/admin UI panels, login/signup/profile pages, Vite build config, docker-compose, README and architecture analysis doc |

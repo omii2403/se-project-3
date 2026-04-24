@@ -33,7 +33,7 @@
     user-select: none;
   }
 
-  /* ── Deck container ── */
+  /* ── Deck ── */
   #deck {
     position: relative;
     width: var(--slide-w);
@@ -43,14 +43,14 @@
     transform: translateY(-50%);
   }
 
-  /* ── Individual slide ── */
+  /* ── Slide ── */
   .slide {
     position: absolute;
     inset: 0;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 40px 52px;
+    padding: 36px 48px 44px;
     display: flex;
     flex-direction: column;
     opacity: 0;
@@ -59,21 +59,13 @@
     transform: translateX(40px);
     overflow: hidden;
   }
-  .slide.active {
-    opacity: 1;
-    pointer-events: all;
-    transform: translateX(0);
-  }
-  .slide.exit {
-    opacity: 0;
-    transform: translateX(-40px);
-  }
+  .slide.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+  .slide.exit   { opacity: 0; transform: translateX(-40px); }
 
-  /* ── Background grid ── */
+  /* grid bg */
   .slide::before {
     content: '';
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background-image:
       linear-gradient(rgba(88,166,255,.04) 1px, transparent 1px),
       linear-gradient(90deg, rgba(88,166,255,.04) 1px, transparent 1px);
@@ -81,1006 +73,854 @@
     border-radius: 12px;
     pointer-events: none;
   }
-
-  /* ── Accent bar top ── */
+  /* accent bar */
   .slide::after {
     content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
+    position: absolute; top: 0; left: 0; right: 0;
     height: 3px;
     border-radius: 12px 12px 0 0;
     background: linear-gradient(90deg, var(--accent), var(--accent4), var(--accent2));
   }
 
   /* ── Typography ── */
-  h1 { font-size: 2.4rem; font-weight: 700; line-height: 1.15; }
-  h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 18px; color: var(--accent); letter-spacing: -.01em; }
-  h3 { font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 7px; }
+  h1 { font-size: 2.5rem; font-weight: 700; line-height: 1.15; }
+  h2 { font-size: 1.85rem; font-weight: 600; margin-bottom: 16px; color: var(--accent); letter-spacing: -.01em; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
   p  { font-size: 1rem; color: var(--text-muted); line-height: 1.6; }
 
   .label {
-    font-size: .8rem;
+    font-size: .82rem;
     font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
     color: var(--text-faint);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
-  /* ── Pills / badges ── */
+  /* ── Pills ── */
   .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: .76rem;
-    font-weight: 600;
-    border: 1px solid transparent;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: .8rem; font-weight: 600; border: 1px solid transparent;
   }
-  .pill-blue  { background: rgba(88,166,255,.12); border-color: rgba(88,166,255,.3);  color: var(--accent); }
-  .pill-green { background: rgba(63,185,80,.12);  border-color: rgba(63,185,80,.3);   color: var(--accent2); }
-  .pill-red   { background: rgba(247,129,102,.12);border-color: rgba(247,129,102,.3); color: var(--accent3); }
-  .pill-purple{ background: rgba(210,168,255,.12);border-color: rgba(210,168,255,.3); color: var(--accent4); }
-  .pill-orange{ background: rgba(255,166,87,.12); border-color: rgba(255,166,87,.3);  color: var(--accent5); }
+  .pill-blue   { background: rgba(88,166,255,.12); border-color: rgba(88,166,255,.3);  color: var(--accent); }
+  .pill-green  { background: rgba(63,185,80,.12);  border-color: rgba(63,185,80,.3);   color: var(--accent2); }
+  .pill-red    { background: rgba(247,129,102,.12);border-color: rgba(247,129,102,.3); color: var(--accent3); }
+  .pill-purple { background: rgba(210,168,255,.12);border-color: rgba(210,168,255,.3); color: var(--accent4); }
+  .pill-orange { background: rgba(255,166,87,.12); border-color: rgba(255,166,87,.3);  color: var(--accent5); }
 
   /* ── Cards ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px 20px;
-  }
-  .card-sm {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 11px 14px;
-  }
+  .card    { background: var(--surface);  border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; }
+  .card-sm { background: var(--surface);  border: 1px solid var(--border); border-radius: 8px; padding: 10px 13px; }
 
-  /* ── Grid helpers ── */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* ── Grids & Flex ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
-
-  /* ── Flex helpers ── */
   .row    { display: flex; align-items: center; gap: 8px; }
   .col    { display: flex; flex-direction: column; gap: 8px; }
-  .gap4   { gap: 4px; }
-  .gap12  { gap: 12px; }
-  .gap16  { gap: 16px; }
-  .gap20  { gap: 20px; }
   .flex1  { flex: 1; }
-  .mt4  { margin-top: 4px; }
-  .mt8  { margin-top: 8px; }
-  .mt12 { margin-top: 12px; }
-  .mt16 { margin-top: 16px; }
-  .mt20 { margin-top: 20px; }
+  .gap6   { gap: 6px; }
+  .gap10  { gap: 10px; }
+  .mt6  { margin-top: 6px; }
+  .mt10 { margin-top: 10px; }
+  .mt14 { margin-top: 14px; }
 
-  /* ── Code block ── */
+  /* ── Lists ── */
+  ul.check { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  ul.check li { font-size: .97rem; color: var(--text-muted); padding-left: 22px; position: relative; }
+  ul.check li::before { content: '✓'; position: absolute; left: 0; color: var(--accent2); font-weight: 700; font-size: .9rem; }
+
+  ul.dot { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  ul.dot li { font-size: .97rem; color: var(--text-muted); padding-left: 16px; position: relative; }
+  ul.dot li::before { content: '·'; position: absolute; left: 3px; color: var(--accent); font-size: 1.1rem; line-height: 1.2; }
+
+  /* ── Table ── */
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  th { background: var(--surface2); color: var(--text-muted); text-align: left; padding: 8px 11px; font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 7px 11px; border-bottom: 1px solid rgba(48,54,61,.5); color: var(--text-muted); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  td strong { color: var(--text); }
+
+  /* ── Stat ── */
+  .stat { font-size: 2rem; font-weight: 700; }
+  .stat-label { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  .icon-circle {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
+  }
+
+  /* ── Flow ── */
+  .flow-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 12px;
+    font-size: .88rem; text-align: center; color: var(--text);
+  }
+  .flow-box .sub { font-size: .75rem; color: var(--text-muted); margin-top: 3px; }
+  .arrow { color: var(--text-faint); font-size: 1.1rem; align-self: center; }
+
+  /* ── Code ── */
   .code {
-    background: #010409;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 14px;
-    font-family: 'Cascadia Code', 'Fira Code', monospace;
-    font-size: .84rem;
-    color: #e6edf3;
-    line-height: 1.6;
-    white-space: pre;
+    background: #010409; border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 14px; font-family: 'Cascadia Code','Fira Code',monospace;
+    font-size: .88rem; color: #e6edf3; line-height: 1.6; white-space: pre;
   }
   .code .kw  { color: #ff7b72; }
   .code .str { color: #a5d6ff; }
   .code .cmt { color: var(--text-faint); }
   .code .fn  { color: #d2a8ff; }
-  .code .num { color: #ffa657; }
-  .code .ok  { color: var(--accent2); }
-
-  /* ── List ── */
-  ul.check { list-style: none; display: flex; flex-direction: column; gap: 7px; }
-  ul.check li { font-size: .93rem; color: var(--text-muted); padding-left: 22px; position: relative; }
-  ul.check li::before { content: '✓'; position: absolute; left: 0; color: var(--accent2); font-weight: 700; font-size: .86rem; }
-
-  ul.dot { list-style: none; display: flex; flex-direction: column; gap: 7px; }
-  ul.dot li { font-size: .93rem; color: var(--text-muted); padding-left: 16px; position: relative; }
-  ul.dot li::before { content: '·'; position: absolute; left: 3px; color: var(--accent); font-size: 1.1rem; line-height: 1.2; }
-
-  /* ── Table ── */
-  table { width: 100%; border-collapse: collapse; font-size: .86rem; }
-  th { background: var(--surface2); color: var(--text-muted); text-align: left; padding: 8px 12px; font-weight: 600; border-bottom: 1px solid var(--border); }
-  td { padding: 7px 12px; border-bottom: 1px solid rgba(48,54,61,.5); color: var(--text-muted); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  td strong { color: var(--text); }
-
-  /* ── Stat number ── */
-  .stat { font-size: 1.9rem; font-weight: 700; }
-  .stat-label { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
-
-  /* ── Divider ── */
-  hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
-
-  /* ── Icon circle ── */
-  .icon-circle {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
-  }
-
-  /* ── Flow arrow ── */
-  .arrow { color: var(--text-faint); font-size: 1.1rem; align-self: center; }
 
   /* ── Slide number ── */
   #slide-num {
-    position: absolute;
-    bottom: 18px;
-    right: 28px;
-    font-size: .78rem;
-    color: var(--text-faint);
-    z-index: 100;
-    pointer-events: none;
+    position: absolute; bottom: 16px; right: 24px;
+    font-size: .8rem; color: var(--text-faint);
+    z-index: 100; pointer-events: none;
   }
 
-  /* ── Navigation ── */
+  /* ── Nav ── */
   #nav {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
+    position: fixed; bottom: 22px; left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    z-index: 200;
+    display: flex; align-items: center; gap: 16px; z-index: 200;
   }
   .nav-btn {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text-muted);
-    padding: 8px 20px;
-    cursor: pointer;
-    font-size: .85rem;
-    font-family: inherit;
-    transition: all .2s;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text-muted);
+    padding: 8px 22px; cursor: pointer; font-size: .88rem;
+    font-family: inherit; transition: all .2s;
   }
   .nav-btn:hover:not(:disabled) { background: var(--surface2); color: var(--text); border-color: var(--accent); }
   .nav-btn:disabled { opacity: .3; cursor: not-allowed; }
-  #progress-bar {
-    width: 180px;
-    height: 4px;
-    background: var(--surface2);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  #progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent4));
-    border-radius: 2px;
-    transition: width .35s ease;
-  }
-  #slide-counter { font-size: .8rem; color: var(--text-muted); min-width: 50px; text-align: center; }
+  #progress-bar { width: 180px; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  #progress-fill { height: 100%; background: linear-gradient(90deg,var(--accent),var(--accent4)); border-radius: 2px; transition: width .35s ease; }
+  #slide-counter { font-size: .82rem; color: var(--text-muted); min-width: 52px; text-align: center; }
+  #kbd-hint { position: fixed; bottom: 22px; right: 26px; font-size: .72rem; color: var(--text-faint); z-index: 200; }
 
-  /* ── Keyboard hint ── */
-  #kbd-hint {
-    position: fixed;
-    bottom: 24px;
-    right: 28px;
-    font-size: .7rem;
-    color: var(--text-faint);
-    z-index: 200;
-  }
-
-  /* ─────────────────────────────────────────
-     SLIDE-SPECIFIC STYLES
-  ───────────────────────────────────────── */
-
-  /* Title slide */
-  #s1 .title-eyebrow { font-size: .78rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
-  #s1 .title-main { font-size: 2.6rem; font-weight: 700; line-height: 1.1; }
-  #s1 .title-sub { font-size: 1.08rem; color: var(--text-muted); margin-top: 10px; }
-  #s1 .title-meta { margin-top: 28px; display: flex; gap: 20px; }
-  #s1 .meta-item { font-size: .82rem; color: var(--text-muted); }
+  /* ── Title slide ── */
+  #s1 .eyebrow { font-size: .8rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  #s1 .title-main { font-size: 2.65rem; font-weight: 700; line-height: 1.1; }
+  #s1 .title-sub  { font-size: 1.08rem; color: var(--text-muted); margin-top: 10px; line-height: 1.55; }
+  #s1 .meta-row   { margin-top: 26px; display: flex; gap: 22px; }
+  #s1 .meta-item  { font-size: .86rem; color: var(--text-muted); }
   #s1 .meta-item strong { color: var(--text); }
-  #s1 .logo-area { position: absolute; right: 52px; top: 40px; bottom: 40px; width: 268px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 12px; }
+  #s1 .right-panel { position: absolute; right: 48px; top: 36px; bottom: 44px; width: 270px; display: flex; flex-direction: column; gap: 12px; justify-content: center; }
 
-  /* NFR table highlight */
+  /* ── Diagram slide ── */
+  .diagram-wrap { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 4px; }
+  .diagram-wrap img {
+    max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 10px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 4px 24px rgba(0,0,0,.5);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
+  /* ── ADR callout ── */
+  .adr-tag { font-size: .72rem; font-weight: 700; letter-spacing: .06em; color: var(--accent5); text-transform: uppercase; }
+
+  /* ── NFR highlight ── */
   .nfr-met { color: var(--accent2) !important; font-weight: 600; }
 
-  /* ADR callout */
-  .adr-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .adr-num { font-size: .72rem; font-weight: 700; letter-spacing: .06em; color: var(--accent5); text-transform: uppercase; }
+  /* ── Tactic badge ── */
+  .tac-nfr { font-size: .72rem; font-weight: 600; padding: 1px 7px; border-radius: 10px; background: rgba(88,166,255,.1); color: var(--accent); border: 1px solid rgba(88,166,255,.25); }
 
-  /* Flow diagram */
-  .flow-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 9px 13px;
-    font-size: .83rem;
-    text-align: center;
-    color: var(--text);
-  }
-  .flow-box .sub { font-size: .72rem; color: var(--text-muted); margin-top: 3px; }
+  /* ── Subsystem card colors ── */
+  .ss-1 { border-left: 3px solid var(--accent);   }
+  .ss-2 { border-left: 3px solid var(--accent2);  }
+  .ss-3 { border-left: 3px solid var(--accent4);  }
+  .ss-4 { border-left: 3px solid var(--accent3);  }
+  .ss-5 { border-left: 3px solid var(--accent5);  }
+  .ss-6 { border-left: 3px solid #8b949e; }
 </style>
 </head>
 <body>
-
 <div id="deck">
 
-  <!-- ══════════════════════════════════════════
-       SLIDE 1 — TITLE
-  ══════════════════════════════════════════ -->
-  <div class="slide active" id="s1">
-    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; max-width:620px;">
-      <div class="title-eyebrow">Software Engineering Project · Team 27</div>
-      <div class="title-main">Interview Preparation<br>Platform</div>
-      <div class="title-sub">A full-stack platform for timed technical interviews with sandboxed code execution and async evaluation.</div>
-      <div class="title-meta">
-        <div class="meta-item"><strong>Stack</strong><br>React · Node.js · MongoDB · Redis · Docker</div>
-        <div class="meta-item"><strong>Team</strong><br>5 members · 4-week sprint</div>
-        <div class="meta-item"><strong>Pattern</strong><br>Modular Monolith + Async Queue</div>
-      </div>
+<!-- ══════════════════════════════
+     SLIDE 1 — TITLE
+══════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:600px;">
+    <div class="eyebrow">Software Engineering · Team 27</div>
+    <div class="title-main">Interview Preparation<br>Platform</div>
+    <div class="title-sub">A full-stack platform for timed technical interviews with sandboxed code execution and asynchronous evaluation.</div>
+    <div class="meta-row">
+      <div class="meta-item"><strong>Stack</strong><br>React · Node.js · MongoDB · Redis · Docker</div>
+      <div class="meta-item"><strong>Team</strong><br>5 members · 4-week sprint</div>
+      <div class="meta-item"><strong>Architecture</strong><br>Modular Monolith + Async Queue</div>
     </div>
-    <!-- Right panel -->
-    <div class="logo-area">
-      <div class="card" style="width:100%;padding:14px 16px;">
-        <div class="label">Question Types</div>
-        <div class="col gap4 mt4">
-          <div class="row"><div class="pill pill-blue">Code</div><span style="font-size:.88rem;color:var(--text-muted)">Multi-language execution</span></div>
-          <div class="row"><div class="pill pill-green">MCQ</div><span style="font-size:.88rem;color:var(--text-muted)">Multiple choice</span></div>
-          <div class="row"><div class="pill pill-purple">SQL</div><span style="font-size:.88rem;color:var(--text-muted)">Query evaluation</span></div>
-        </div>
-      </div>
-      <div class="card" style="width:100%;padding:14px 16px;">
-        <div class="label">Deliverables</div>
-        <ul class="check mt4">
-          <li>Requirements &amp; Subsystems</li>
-          <li>Architecture Framework</li>
-          <li>Tactics &amp; Patterns</li>
-          <li>Prototype Implementation</li>
-        </ul>
-      </div>
-    </div>
-    <div id="slide-num">1 / 13</div>
   </div>
-
-  <!-- ══════════════════════════════════════════
-       SLIDE 2 — TEAM
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s2">
-    <h2>Team 27</h2>
-    <div class="grid-2" style="gap:10px; flex:1;">
-      <div class="card" style="display:flex;align-items:flex-start;gap:12px;">
-        <div class="icon-circle" style="background:rgba(88,166,255,.15);color:var(--accent)">A</div>
-        <div>
-          <h3>Akshat <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">· 2025201005</span></h3>
-          <p style="font-size:.9rem;margin-top:4px">Docker runner · Async queue/worker · Evaluation strategies · Idempotency tests</p>
-          <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:5px">
-            <div class="pill pill-blue">Task 2</div>
-            <div class="pill pill-red">Evaluation Engine</div>
-            <div class="pill pill-orange">BullMQ Worker</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" style="display:flex;align-items:flex-start;gap:12px;">
-        <div class="icon-circle" style="background:rgba(63,185,80,.15);color:var(--accent2)">O</div>
-        <div>
-          <h3>Om <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">· 2025201008</span></h3>
-          <p style="font-size:.9rem;margin-top:4px">JWT auth · Role guards · Admin user management · User model · Integration tests</p>
-          <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:5px">
-            <div class="pill pill-blue">Task 1</div>
-            <div class="pill pill-green">Auth &amp; Users</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" style="display:flex;align-items:flex-start;gap:12px;">
-        <div class="icon-circle" style="background:rgba(210,168,255,.15);color:var(--accent4)">P</div>
-        <div>
-          <h3>Parv <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">· 2025201093</span></h3>
-          <p style="font-size:.9rem;margin-top:4px">Question CRUD · Topic caching · Timed test lifecycle · Anti-cheat violation tracking</p>
-          <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:5px">
-            <div class="pill pill-blue">Task 3</div>
-            <div class="pill pill-purple">Questions &amp; Tests</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" style="display:flex;align-items:flex-start;gap:12px;">
-        <div class="icon-circle" style="background:rgba(255,166,87,.15);color:var(--accent5)">H</div>
-        <div>
-          <h3>Hardik <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">· 2025201046</span></h3>
-          <p style="font-size:.9rem;margin-top:4px">Submission read service · Cache-aside · Analytics aggregations · Runtime telemetry</p>
-          <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:5px">
-            <div class="pill pill-blue">Task 3</div>
-            <div class="pill pill-orange">Submissions &amp; Analytics</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" style="display:flex;align-items:flex-start;gap:12px;grid-column:1/-1;">
-        <div class="icon-circle" style="background:rgba(247,129,102,.15);color:var(--accent3)">G</div>
-        <div>
-          <h3>Gaurav <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">· 2025201065</span></h3>
-          <p style="font-size:.9rem;margin-top:4px">React frontend · Vite config · Docker Compose infrastructure · README &amp; architecture documentation</p>
-          <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:5px">
-            <div class="pill pill-blue">Task 3</div>
-            <div class="pill pill-red">Frontend &amp; DevOps</div>
-          </div>
-        </div>
+  <div class="right-panel">
+    <div class="card" style="padding:13px 16px;">
+      <div class="label">Question Types</div>
+      <div class="col gap6 mt6">
+        <div class="row"><div class="pill pill-blue">Code</div><span style="font-size:.92rem;color:var(--text-muted)">Multi-language sandboxed exec</span></div>
+        <div class="row"><div class="pill pill-green">MCQ</div><span style="font-size:.92rem;color:var(--text-muted)">Multiple choice</span></div>
+        <div class="row"><div class="pill pill-purple">SQL</div><span style="font-size:.92rem;color:var(--text-muted)">Query evaluation</span></div>
       </div>
     </div>
-    <div id="slide-num">2 / 13</div>
+    <div class="card" style="padding:13px 16px;">
+      <div class="label">4 Deliverables</div>
+      <ul class="check mt6">
+        <li>Task 1 — Requirements &amp; Subsystems</li>
+        <li>Task 2 — Architecture Framework</li>
+        <li>Task 3 — Tactics &amp; Patterns</li>
+        <li>Task 4 — Prototype Implementation</li>
+      </ul>
+    </div>
   </div>
+  <div id="slide-num">1 / 17</div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SLIDE 3 — TECH STACK
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s3">
-    <h2>Tech Stack</h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;flex:1;">
-      <!-- Backend column -->
-      <div class="col" style="gap:8px;">
-        <div class="label">Backend</div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(63,185,80,.12);color:var(--accent2);font-size:.88rem;width:34px;height:34px;">⬡</div>
-          <div><strong style="font-size:.9rem">Node.js 20 + Express 4</strong><br><span style="font-size:.78rem;color:var(--text-muted)">REST API server</span></div>
-        </div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(63,185,80,.12);color:var(--accent2);font-size:.88rem;width:34px;height:34px;">🍃</div>
-          <div><strong style="font-size:.85rem">MongoDB 7 + Mongoose 8</strong><br><span style="font-size:.76rem;color:var(--text-muted)">Document database + ODM</span></div>
-        </div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(247,129,102,.12);color:var(--accent3);font-size:.88rem;width:34px;height:34px;">⚡</div>
-          <div><strong style="font-size:.85rem">BullMQ 5 + Redis 7</strong><br><span style="font-size:.76rem;color:var(--text-muted)">Async job queue</span></div>
-        </div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(210,168,255,.12);color:var(--accent4);font-size:.88rem;width:34px;height:34px;">🔑</div>
-          <div><strong style="font-size:.85rem">JWT + bcryptjs</strong><br><span style="font-size:.76rem;color:var(--text-muted)">Stateless auth &amp; password hashing</span></div>
-        </div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(88,166,255,.12);color:var(--accent);font-size:.88rem;width:34px;height:34px;">🐳</div>
-          <div><strong style="font-size:.85rem">Docker</strong><br><span style="font-size:.76rem;color:var(--text-muted)">node · python · gcc containers</span></div>
-        </div>
-      </div>
-      <!-- Frontend column -->
-      <div class="col" style="gap:8px;">
-        <div class="label">Frontend</div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(88,166,255,.12);color:var(--accent);font-size:.88rem;width:34px;height:34px;">⚛</div>
-          <div><strong style="font-size:.85rem">React 18</strong><br><span style="font-size:.76rem;color:var(--text-muted)">SPA with role-based routing</span></div>
-        </div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(88,166,255,.12);color:var(--accent);font-size:.88rem;width:34px;height:34px;">↔</div>
-          <div><strong style="font-size:.85rem">React Router v6</strong><br><span style="font-size:.76rem;color:var(--text-muted)">Client-side navigation</span></div>
-        </div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(255,166,87,.12);color:var(--accent5);font-size:.88rem;width:34px;height:34px;">⚡</div>
-          <div><strong style="font-size:.85rem">Vite 8</strong><br><span style="font-size:.76rem;color:var(--text-muted)">Build tool + dev proxy to API</span></div>
-        </div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(210,168,255,.12);color:var(--accent4);font-size:.88rem;width:34px;height:34px;">✏</div>
-          <div><strong style="font-size:.85rem">Monaco Editor</strong><br><span style="font-size:.76rem;color:var(--text-muted)">VS Code editor in the browser</span></div>
-        </div>
-      </div>
-      <!-- Testing + Infra column -->
-      <div class="col" style="gap:8px;">
-        <div class="label">Testing</div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(63,185,80,.12);color:var(--accent2);font-size:.88rem;width:34px;height:34px;">✓</div>
-          <div><strong style="font-size:.85rem">Jest + Supertest</strong><br><span style="font-size:.76rem;color:var(--text-muted)">Integration tests</span></div>
-        </div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(63,185,80,.12);color:var(--accent2);font-size:.88rem;width:34px;height:34px;">🗄</div>
-          <div><strong style="font-size:.85rem">MongoDB Memory Server</strong><br><span style="font-size:.76rem;color:var(--text-muted)">In-memory test database</span></div>
-        </div>
-        <div class="label" style="margin-top:6px;">Infrastructure</div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(88,166,255,.12);color:var(--accent);font-size:.88rem;width:34px;height:34px;">🐳</div>
-          <div><strong style="font-size:.85rem">Docker Compose</strong><br><span style="font-size:.76rem;color:var(--text-muted)">MongoDB + Redis orchestration</span></div>
-        </div>
-        <div class="card-sm row" style="gap:9px;">
-          <div class="icon-circle" style="background:rgba(247,129,102,.12);color:var(--accent3);font-size:.88rem;width:34px;height:34px;">⚙</div>
-          <div><strong style="font-size:.85rem">Node.js Worker Process</strong><br><span style="font-size:.76rem;color:var(--text-muted)">Separate BullMQ consumer</span></div>
-        </div>
+<!-- ══════════════════════════════
+     SLIDE 2 — TEAM
+══════════════════════════════ -->
+<div class="slide" id="s2">
+  <h2>Team 27</h2>
+  <div class="grid-2" style="flex:1;gap:10px;">
+    <div class="card" style="display:flex;align-items:flex-start;gap:11px;">
+      <div class="icon-circle" style="background:rgba(88,166,255,.15);color:var(--accent)">O</div>
+      <div>
+        <h3>Om Mehra <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">· 2025201008</span></h3>
+        <p style="font-size:.93rem;margin-top:4px">JWT auth flow (signup/signin/verify) · Global auth middleware · Role guard · Admin user management API · User model · Users integration test</p>
+        <div class="row mt6" style="flex-wrap:wrap;gap:5px"><div class="pill pill-blue">Task 1</div><div class="pill pill-green">Auth &amp; Users</div></div>
       </div>
     </div>
-    <div id="slide-num">3 / 13</div>
+    <div class="card" style="display:flex;align-items:flex-start;gap:11px;">
+      <div class="icon-circle" style="background:rgba(63,185,80,.15);color:var(--accent2)">A</div>
+      <div>
+        <h3>Akshat Kotadia <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">· 2025201005</span></h3>
+        <p style="font-size:.93rem;margin-top:4px">Docker sandbox runner · Async evaluation pipeline · BullMQ queue/worker · Evaluation strategies (Code, MCQ, SQL) · Dead-letter routing · Idempotency test</p>
+        <div class="row mt6" style="flex-wrap:wrap;gap:5px"><div class="pill pill-blue">Task 2</div><div class="pill pill-red">Evaluation Engine</div><div class="pill pill-orange">BullMQ Worker</div></div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:flex-start;gap:11px;">
+      <div class="icon-circle" style="background:rgba(210,168,255,.15);color:var(--accent4)">P</div>
+      <div>
+        <h3>Parv Shah <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">· 2025201093</span></h3>
+        <p style="font-size:.93rem;margin-top:4px">Question bank CRUD API · Topic caching · Timed test session lifecycle · Anti-cheat violation tracking · Test builder &amp; live test frontend</p>
+        <div class="row mt6" style="flex-wrap:wrap;gap:5px"><div class="pill pill-blue">Task 3</div><div class="pill pill-purple">Questions &amp; Tests</div></div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:flex-start;gap:11px;">
+      <div class="icon-circle" style="background:rgba(255,166,87,.15);color:var(--accent5)">H</div>
+      <div>
+        <h3>Hardik Kothari <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">· 2025201046</span></h3>
+        <p style="font-size:.93rem;margin-top:4px">Submission read service with cache-aside · Student/admin analytics aggregations · Monitor dashboard · Runtime metrics · Worker telemetry · Cache warm-up</p>
+        <div class="row mt6" style="flex-wrap:wrap;gap:5px"><div class="pill pill-blue">Task 3</div><div class="pill pill-orange">Analytics &amp; Monitor</div></div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:flex-start;gap:11px;grid-column:1/-1;">
+      <div class="icon-circle" style="background:rgba(247,129,102,.15);color:var(--accent3)">G</div>
+      <div>
+        <h3>Gaurav Patel <span style="color:var(--text-muted);font-weight:400;font-size:.85rem">· 2025201065</span></h3>
+        <p style="font-size:.93rem;margin-top:4px">React app structure · Auth/student/admin UI panels · Login/signup/profile pages · Vite build config · Docker Compose · README &amp; architecture analysis doc</p>
+        <div class="row mt6" style="flex-wrap:wrap;gap:5px"><div class="pill pill-blue">Task 3</div><div class="pill pill-red">Frontend &amp; DevOps</div></div>
+      </div>
+    </div>
   </div>
+  <div id="slide-num">2 / 17</div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SLIDE 4 — SYSTEM ARCHITECTURE
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s4">
-    <h2>System Architecture</h2>
-    <p style="margin-bottom:14px;">Modular Monolith with Event-Driven Async Worker — 9 internal modules with clear boundaries.</p>
-    <div style="display:flex;gap:14px;flex:1;align-items:flex-start;">
-      <!-- Left: flow -->
-      <div style="flex:1;display:flex;flex-direction:column;gap:8px;justify-content:center;">
-        <div class="flow-box" style="border-color:rgba(88,166,255,.4)">
-          <strong>React Frontend</strong>
-          <div class="sub">Login · Dashboard · Test · Editor · Admin</div>
-        </div>
-        <div class="arrow" style="text-align:center">↕ REST / Proxy</div>
-        <div class="flow-box" style="border-color:rgba(210,168,255,.4)">
-          <strong>Express API (9 Modules)</strong>
-          <div class="sub">Auth · Users · Questions · Tests · Submissions · Analytics · Monitor</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
-            <div class="arrow">↓ enqueue</div>
-            <div class="flow-box" style="width:100%;border-color:rgba(247,129,102,.4)">
-              <strong>BullMQ Queue</strong>
-              <div class="sub">Redis-backed jobs</div>
-            </div>
-            <div class="arrow">↓ consume</div>
-            <div class="flow-box" style="width:100%;border-color:rgba(255,166,87,.4)">
-              <strong>Worker Process</strong>
-              <div class="sub">Strategy + Docker exec</div>
-            </div>
-          </div>
-          <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
-            <div class="flow-box" style="border-color:rgba(63,185,80,.4)">
-              <strong>MongoDB</strong>
-              <div class="sub">Users · Questions · Submissions · Sessions</div>
-            </div>
-            <div class="flow-box" style="border-color:rgba(247,129,102,.4)">
-              <strong>Redis</strong>
-              <div class="sub">Queue · Worker telemetry · Cache</div>
-            </div>
-            <div class="flow-box" style="border-color:rgba(88,166,255,.4)">
-              <strong>Docker Daemon</strong>
-              <div class="sub">node · python · gcc containers</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Right: module list -->
-      <div style="width:236px;">
-        <div class="label">9 Internal Modules</div>
-        <div style="display:flex;flex-direction:column;gap:4px;margin-top:6px;">
-          <div class="card-sm" style="padding:6px 11px;"><span style="color:var(--accent);font-weight:600;font-size:.83rem">Auth</span><span style="font-size:.79rem;color:var(--text-muted)"> — JWT signup / signin / verify</span></div>
-          <div class="card-sm" style="padding:6px 11px;"><span style="color:var(--accent2);font-weight:600;font-size:.83rem">Users</span><span style="font-size:.79rem;color:var(--text-muted)"> — Admin user management</span></div>
-          <div class="card-sm" style="padding:6px 11px;"><span style="color:var(--accent4);font-weight:600;font-size:.83rem">Questions</span><span style="font-size:.79rem;color:var(--text-muted)"> — CRUD + topic caching</span></div>
-          <div class="card-sm" style="padding:6px 11px;"><span style="color:var(--accent5);font-weight:600;font-size:.83rem">Tests</span><span style="font-size:.79rem;color:var(--text-muted)"> — Timed session lifecycle</span></div>
-          <div class="card-sm" style="padding:6px 11px;"><span style="color:var(--accent3);font-weight:600;font-size:.83rem">Submissions</span><span style="font-size:.79rem;color:var(--text-muted)"> — Async intake (202)</span></div>
-          <div class="card-sm" style="padding:6px 11px;"><span style="color:var(--accent);font-weight:600;font-size:.83rem">Evaluation</span><span style="font-size:.79rem;color:var(--text-muted)"> — Worker + strategies</span></div>
-          <div class="card-sm" style="padding:6px 11px;"><span style="color:var(--accent2);font-weight:600;font-size:.83rem">Analytics</span><span style="font-size:.79rem;color:var(--text-muted)"> — Dashboard metrics</span></div>
-          <div class="card-sm" style="padding:6px 11px;"><span style="color:var(--accent4);font-weight:600;font-size:.83rem">Monitor</span><span style="font-size:.79rem;color:var(--text-muted)"> — Health + telemetry</span></div>
-          <div class="card-sm" style="padding:6px 11px;"><span style="color:var(--accent5);font-weight:600;font-size:.83rem">Shared</span><span style="font-size:.79rem;color:var(--text-muted)"> — Middleware, cache, metrics</span></div>
-        </div>
-      </div>
+<!-- ══════════════════════════════
+     SLIDE 3 — TASK 1: FUNCTIONAL REQUIREMENTS
+══════════════════════════════ -->
+<div class="slide" id="s3">
+  <h2 style="margin-bottom:8px;">Task 1 — Functional Requirements</h2>
+  <table style="font-size:.8rem;">
+    <thead>
+      <tr>
+        <th style="width:52px;padding:6px 11px">ID</th>
+        <th style="padding:6px 11px">Requirement</th>
+        <th style="width:260px;padding:6px 11px">Architectural Significance</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding:4px 11px"><strong>FR-1</strong></td><td style="padding:4px 11px">Students &amp; admins register, log in, verify tokens, manage profiles</td><td style="padding:4px 11px">Drives auth, profile management, role-aware protected access</td></tr>
+      <tr><td style="padding:4px 11px"><strong>FR-2</strong></td><td style="padding:4px 11px">Protected routes require valid JWT; admin-only routes reject student access</td><td style="padding:4px 11px">Drives global access control and role-based authorisation</td></tr>
+      <tr><td style="padding:4px 11px"><strong>FR-3</strong></td><td style="padding:4px 11px">Admins can create, edit, deactivate and permanently delete questions</td><td style="padding:4px 11px">Drives question bank CRUD, role protection and content lifecycle</td></tr>
+      <tr><td style="padding:4px 11px"><strong>FR-4</strong></td><td style="padding:4px 11px">Question bank supports Code, MCQ, and SQL question types</td><td style="padding:4px 11px">Drives flexible storage and evaluation logic for mixed types</td></tr>
+      <tr><td style="padding:4px 11px"><strong>FR-5</strong></td><td style="padding:4px 11px">Students start timed tests filtered by topic, type, difficulty, count, duration</td><td style="padding:4px 11px">Drives test-session generation and server-side timing control</td></tr>
+      <tr><td style="padding:4px 11px"><strong>FR-6</strong></td><td style="padding:4px 11px">Test creation prefers unseen questions; allows controlled repetition when pool is limited</td><td style="padding:4px 11px">Drives question-selection policy and test continuity</td></tr>
+      <tr><td style="padding:4px 11px"><strong>FR-7</strong></td><td style="padding:4px 11px">Students can run sample test cases for code questions during a timed session</td><td style="padding:4px 11px">Drives secure sample-run support in the test flow</td></tr>
+      <tr><td style="padding:4px 11px"><strong>FR-8</strong></td><td style="padding:4px 11px">Timed tests record anti-cheat violations; auto-submit on 2nd violation</td><td style="padding:4px 11px">Drives exam integrity enforcement and violation tracking</td></tr>
+      <tr><td style="padding:4px 11px;white-space:nowrap"><strong>FR-9</strong></td><td style="padding:4px 11px">Final submission stores answers, evaluates them, returns a result summary</td><td style="padding:4px 11px">Drives async evaluation pipeline, persistence, and result reporting</td></tr>
+      <tr><td style="padding:4px 11px;white-space:nowrap"><strong>FR-10</strong></td><td style="padding:4px 11px">Submission APIs support idempotency keys and queue status tracking</td><td style="padding:4px 11px">Drives duplicate-prevention and async processing visibility</td></tr>
+      <tr><td style="padding:4px 11px;white-space:nowrap"><strong>FR-11</strong></td><td style="padding:4px 11px">Admins can manage users and students with safety checks</td><td style="padding:4px 11px">Drives admin-only user management and safety safeguards</td></tr>
+      <tr><td style="padding:4px 11px;white-space:nowrap"><strong>FR-12</strong></td><td style="padding:4px 11px">Students can view performance history and weak areas</td><td style="padding:4px 11px">Drives analytics aggregation and read-side reporting</td></tr>
+    </tbody>
+  </table>
+  <div id="slide-num">3 / 17</div>
+</div>
+
+<!-- ══════════════════════════════
+     SLIDE 4 — TASK 1: NON-FUNCTIONAL REQUIREMENTS
+══════════════════════════════ -->
+<div class="slide" id="s4">
+  <h2>Task 1 — Non-Functional Requirements</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:52px">ID</th>
+        <th>Requirement</th>
+        <th style="width:200px">Metric / Target</th>
+        <th>Tactic / Evidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="white-space:nowrap"><div class="pill pill-blue" style="font-size:.72rem">NFR-1</div></td>
+        <td>Performance — results within 5 s</td>
+        <td class="nfr-met">p95 API ≤ 500 ms · eval ≤ 10 s</td>
+        <td>Async queue + cache-aside reads</td>
+      </tr>
+      <tr>
+        <td style="white-space:nowrap"><div class="pill pill-green" style="font-size:.72rem">NFR-2</div></td>
+        <td>Scalability — services scale independently</td>
+        <td class="nfr-met">Worker concurrency = 2 (configurable)</td>
+        <td>Stateless JWT · queue-decoupled workers</td>
+      </tr>
+      <tr>
+        <td style="white-space:nowrap"><div class="pill pill-red" style="font-size:.72rem">NFR-3</div></td>
+        <td>Security — sandboxed execution &amp; authenticated access</td>
+        <td class="nfr-met">1 CPU · 256 MB · no network · 10 s timeout</td>
+        <td>Docker sandbox + global JWT middleware</td>
+      </tr>
+      <tr>
+        <td style="white-space:nowrap"><div class="pill pill-green" style="font-size:.72rem">NFR-4</div></td>
+        <td>Availability — 99.5% uptime target</td>
+        <td class="nfr-met">/health/ready returns 503 if dep. unhealthy</td>
+        <td>Health probes · worker heartbeat · retries</td>
+      </tr>
+      <tr>
+        <td style="white-space:nowrap"><div class="pill pill-purple" style="font-size:.72rem">NFR-6</div></td>
+        <td>Maintainability — modular codebase</td>
+        <td class="nfr-met">9 strict internal modules</td>
+        <td>Modular monolith · Strategy + Factory patterns</td>
+      </tr>
+      <tr>
+        <td style="white-space:nowrap"><div class="pill pill-orange" style="font-size:.72rem">NFR-7</div></td>
+        <td>Observability — structured logs &amp; telemetry</td>
+        <td class="nfr-met">5-min latency &amp; worker snapshots</td>
+        <td>Monitor dashboard · runtimeMetrics · logs</td>
+      </tr>
+      <tr>
+        <td style="white-space:nowrap"><div class="pill pill-purple" style="font-size:.72rem">NFR-8</div></td>
+        <td>Freshness — reads reflect recent writes quickly</td>
+        <td class="nfr-met">Submissions 8 s TTL · topics 60 s TTL</td>
+        <td>Cache invalidation on every write path</td>
+      </tr>
+    </tbody>
+  </table>
+  <div id="slide-num">4 / 17</div>
+</div>
+
+<!-- ══════════════════════════════
+     SLIDE 5 — TASK 1: SUBSYSTEMS
+══════════════════════════════ -->
+<div class="slide" id="s5">
+  <h2>Task 1 — Subsystem Overview</h2>
+  <p style="margin-bottom:14px;">Modular monolith backend with a React frontend and a separate BullMQ worker for heavy evaluation.</p>
+  <div class="grid-2" style="flex:1;gap:10px;align-content:start;">
+    <div class="card ss-1">
+      <h3 style="color:var(--accent)">Presentation</h3>
+      <p style="font-size:.95rem;margin-top:5px">React frontend with role-aware flows. Student pages: login, test builder, live test, submissions, analytics, profile. Admin pages: question management, user management, monitoring.</p>
     </div>
-    <div id="slide-num">4 / 13</div>
+    <div class="card ss-2">
+      <h3 style="color:var(--accent2)">Identity &amp; Access</h3>
+      <p style="font-size:.95rem;margin-top:5px">Auth module handles registration, login, token verification, and profile access. Users module provides admin-only student account management with safety guards (no self-delete, seed-admin protection).</p>
+    </div>
+    <div class="card ss-3">
+      <h3 style="color:var(--accent4)">Test &amp; Question</h3>
+      <p style="font-size:.95rem;margin-top:5px">Questions module manages Code, MCQ, SQL CRUD. Tests module handles timed session creation, server-side timer, question delivery, sample runs, anti-cheat violations, and final submission.</p>
+    </div>
+    <div class="card ss-4">
+      <h3 style="color:var(--accent3)">Evaluation &amp; Queue</h3>
+      <p style="font-size:.95rem;margin-top:5px">Submissions module accepts requests and enqueues them (202). Evaluation module consumes BullMQ jobs, selects strategy (Code/MCQ/SQL), executes in isolated Docker containers, writes results back.</p>
+    </div>
+    <div class="card ss-5">
+      <h3 style="color:var(--accent5)">Analytics &amp; Monitoring</h3>
+      <p style="font-size:.95rem;margin-top:5px">Analytics: student summaries and admin overviews via MongoDB aggregations. Monitor: exposes BullMQ queue state, worker heartbeat, API latency metrics, and readiness probes.</p>
+    </div>
+    <div class="card ss-6">
+      <h3 style="color:var(--text-muted)">Data &amp; Cache</h3>
+      <p style="font-size:.95rem;margin-top:5px">MongoDB for persistent domain data. In-memory caches (submissions list 8 s, topics 60 s, summaries 15 s, max 2000 entries LRU) improve read speed. Startup warm-up pre-populates 8 most-active student caches.</p>
+    </div>
   </div>
+  <div id="slide-num">5 / 17</div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SLIDE 5 — FEATURES (STUDENT)
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s5">
-    <h2>Student Features</h2>
-    <div class="grid-2" style="flex:1;gap:12px;align-content:start;">
-      <div class="card">
-        <div class="row gap4 mt4" style="margin-bottom:8px;">
-          <div class="icon-circle" style="background:rgba(88,166,255,.12);color:var(--accent);width:28px;height:28px;font-size:.85rem">🔐</div>
-          <h3>Authentication</h3>
+<!-- ══════════════════════════════
+     SLIDE 6 — TASK 2: STAKEHOLDERS & VIEWPOINTS
+══════════════════════════════ -->
+<div class="slide" id="s6">
+  <h2>Task 2 — Stakeholders &amp; Architecture Viewpoints (IEEE 42010)</h2>
+  <div style="display:flex;gap:12px;flex:1;min-height:0;">
+    <!-- Stakeholders table -->
+    <div style="flex:1;min-width:0;">
+      <div class="label">Stakeholders</div>
+      <table style="font-size:.86rem;">
+        <thead><tr><th>Stakeholder</th><th>Key Concerns</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Students</strong></td><td>Simple test flow · fair anti-cheat · fast feedback · clear results</td></tr>
+          <tr><td><strong>Administrators</strong></td><td>Reliable CRUD · role protection · monitoring visibility · data correctness</td></tr>
+          <tr><td><strong>Developers</strong></td><td>Modular boundaries · testability · clear APIs · low setup friction</td></tr>
+          <tr><td><strong>Deployment Owner</strong></td><td>Secure code exec · controlled infra cost · health visibility · recoverability</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Viewpoints -->
+    <div style="flex:1;min-width:0;">
+      <div class="label">Architecture Viewpoints</div>
+      <div class="col gap6">
+        <div class="card-sm" style="border-left:3px solid var(--accent);">
+          <div class="row"><strong style="font-size:.92rem;color:var(--accent)">Logical</strong><span style="font-size:.8rem;color:var(--text-muted)">— 9 internal modules with strict boundaries</span></div>
+          <p style="font-size:.82rem;margin-top:3px;color:var(--text-muted)">Stakeholders: Developers, Admins · Concern: Maintainability, feature evolution</p>
         </div>
-        <ul class="dot">
-          <li>Register / login with email + password</li>
-          <li>JWT-based stateless sessions (24h expiry)</li>
-          <li>Profile update</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:8px;">
-          <div class="icon-circle" style="background:rgba(63,185,80,.12);color:var(--accent2);width:28px;height:28px;font-size:.85rem">⚙</div>
-          <h3>Test Builder</h3>
+        <div class="card-sm" style="border-left:3px solid var(--accent2);">
+          <div class="row"><strong style="font-size:.92rem;color:var(--accent2)">Process</strong><span style="font-size:.8rem;color:var(--text-muted)">— runtime timed-test &amp; async submission flows</span></div>
+          <p style="font-size:.82rem;margin-top:3px;color:var(--text-muted)">Stakeholders: Students, Developers · Concern: Performance, responsiveness</p>
         </div>
-        <ul class="dot">
-          <li>Select topics, question types, difficulty, count</li>
-          <li>Set custom test duration</li>
-          <li>Shuffled question delivery (no-repeat)</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:8px;">
-          <div class="icon-circle" style="background:rgba(247,129,102,.12);color:var(--accent3);width:28px;height:28px;font-size:.85rem">⏱</div>
-          <h3>Timed Test Engine</h3>
+        <div class="card-sm" style="border-left:3px solid var(--accent5);">
+          <div class="row"><strong style="font-size:.92rem;color:var(--accent5)">Deployment</strong><span style="font-size:.8rem;color:var(--text-muted)">— Node API + worker + MongoDB + Redis + Docker</span></div>
+          <p style="font-size:.82rem;margin-top:3px;color:var(--text-muted)">Stakeholders: Deployment Owner, Developers · Concern: Setup simplicity, isolation</p>
         </div>
-        <ul class="dot">
-          <li>Server-side timer enforcement</li>
-          <li>Anti-cheat: tab-switch / focus-loss tracking</li>
-          <li>Auto-submit on 2nd violation</li>
-          <li>Monaco editor with language highlighting</li>
-          <li>Run sample test cases before submitting</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:8px;">
-          <div class="icon-circle" style="background:rgba(210,168,255,.12);color:var(--accent4);width:28px;height:28px;font-size:.85rem">📊</div>
-          <h3>Analytics Dashboard</h3>
+        <div class="card-sm" style="border-left:3px solid var(--accent3);">
+          <div class="row"><strong style="font-size:.92rem;color:var(--accent3)">Security</strong><span style="font-size:.8rem;color:var(--text-muted)">— API access control + sandbox safety boundaries</span></div>
+          <p style="font-size:.82rem;margin-top:3px;color:var(--text-muted)">Stakeholders: Students, Admins, Deployment Owner · Concern: Unauthorized access, safe exec</p>
         </div>
-        <ul class="dot">
-          <li>Topic-wise performance breakdown</li>
-          <li>Weak areas identification</li>
-          <li>Average scores &amp; performance history</li>
-          <li>Submissions with filter &amp; pagination</li>
-        </ul>
+        <div class="card-sm" style="border-left:3px solid var(--accent4);">
+          <div class="row"><strong style="font-size:.92rem;color:var(--accent4)">Operational</strong><span style="font-size:.8rem;color:var(--text-muted)">— health, logs, metrics, cache warm-up</span></div>
+          <p style="font-size:.82rem;margin-top:3px;color:var(--text-muted)">Stakeholders: Developers, Admins · Concern: Incident detection, debugging speed</p>
+        </div>
       </div>
     </div>
-    <div id="slide-num">5 / 13</div>
   </div>
+  <div id="slide-num">6 / 17</div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SLIDE 6 — FEATURES (ADMIN)
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s6">
-    <h2>Admin Features</h2>
-    <div class="grid-2" style="flex:1;gap:12px;align-content:start;">
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:8px;">
-          <div class="icon-circle" style="background:rgba(88,166,255,.12);color:var(--accent);width:28px;height:28px;font-size:.85rem">📋</div>
-          <h3>Question Management</h3>
-        </div>
-        <ul class="dot">
-          <li>Create / edit / deactivate / delete questions</li>
-          <li>3 types: Code · MCQ · SQL</li>
-          <li>Sample + hidden test cases for code</li>
-          <li>Topic &amp; difficulty tagging</li>
-          <li>Correct answers hidden from students</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:8px;">
-          <div class="icon-circle" style="background:rgba(63,185,80,.12);color:var(--accent2);width:28px;height:28px;font-size:.85rem">👥</div>
-          <h3>User Management</h3>
-        </div>
-        <ul class="dot">
-          <li>List / edit / delete user accounts</li>
-          <li>Password reset capability</li>
-          <li>Safety guards: cannot delete self or seed admin</li>
-          <li>Role-based access control</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:8px;">
-          <div class="icon-circle" style="background:rgba(255,166,87,.12);color:var(--accent5);width:28px;height:28px;font-size:.85rem">📈</div>
-          <h3>Admin Dashboard</h3>
-        </div>
-        <ul class="dot">
-          <li>Platform-wide metrics overview</li>
-          <li>Total users, active questions</li>
-          <li>Submission stats &amp; trends</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:8px;">
-          <div class="icon-circle" style="background:rgba(247,129,102,.12);color:var(--accent3);width:28px;height:28px;font-size:.85rem">🔭</div>
-          <h3>Monitor Dashboard</h3>
-        </div>
-        <ul class="dot">
-          <li>Real-time BullMQ queue status</li>
-          <li>Worker heartbeat (5s interval)</li>
-          <li>API latency metrics (5-min window)</li>
-          <li><code style="font-size:.82rem;background:var(--surface2);padding:1px 5px;border-radius:3px">/health/live</code> · <code style="font-size:.82rem;background:var(--surface2);padding:1px 5px;border-radius:3px">/health/ready</code> endpoints</li>
-        </ul>
-      </div>
+<!-- ══════════════════════════════
+     SLIDE 7 — TASK 2: ADRs
+══════════════════════════════ -->
+<div class="slide" id="s7">
+  <h2>Task 2 — Architecture Decision Records</h2>
+  <div class="grid-2" style="flex:1;gap:10px;align-content:start;">
+    <div class="card">
+      <div class="row" style="margin-bottom:6px;gap:8px;"><div class="adr-tag">ADR-001</div><h3 style="font-size:1.02rem">Docker Sandboxing for Code Execution</h3></div>
+      <p style="font-size:.93rem"><strong style="color:var(--text)">Decision:</strong> Run code in short-lived Docker containers with 1 CPU · 256 MB · no network · 10 s timeout.<br><span style="color:var(--accent3)">Trade-off:</span> Strong isolation vs. container startup overhead per evaluation.</p>
     </div>
-    <div id="slide-num">6 / 13</div>
+    <div class="card">
+      <div class="row" style="margin-bottom:6px;gap:8px;"><div class="adr-tag">ADR-002</div><h3 style="font-size:1.02rem">Async Queue — BullMQ + Redis</h3></div>
+      <p style="font-size:.93rem"><strong style="color:var(--text)">Decision:</strong> Save job as QUEUED, enqueue to BullMQ, return 202 in &lt;50 ms. Worker evaluates separately.<br><span style="color:var(--accent3)">Trade-off:</span> Better responsiveness vs. Redis + worker ops complexity.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:6px;gap:8px;"><div class="adr-tag">ADR-003</div><h3 style="font-size:1.02rem">Modular Monolith over Microservices</h3></div>
+      <p style="font-size:.93rem"><strong style="color:var(--text)">Decision:</strong> One deployable with 9 strict internal modules. Modules communicate via function calls, not network.<br><span style="color:var(--accent3)">Trade-off:</span> Simple deployment &amp; teamwork vs. coupled scaling. Boundaries are clean for future extraction.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:6px;gap:8px;"><div class="adr-tag">ADR-004</div><h3 style="font-size:1.02rem">JWT Stateless Authentication</h3></div>
+      <p style="font-size:.93rem"><strong style="color:var(--text)">Decision:</strong> Signed JWT with userId + role, 24 h expiry. Middleware verifies signature with no DB query.<br><span style="color:var(--accent3)">Trade-off:</span> Fast &amp; horizontally scalable vs. no early token revocation without a blacklist.</p>
+    </div>
+    <div class="card" style="grid-column:1/-1;padding:12px 16px;">
+      <div class="row" style="margin-bottom:6px;gap:8px;"><div class="adr-tag">ADR-005</div><h3 style="font-size:1.02rem">MongoDB for Primary Data Storage</h3></div>
+      <p style="font-size:.93rem"><strong style="color:var(--text)">Decision:</strong> Document store to accommodate heterogeneous question types (Code/MCQ/SQL have different fields). Mongoose provides application-layer schema validation. Schema evolves fast during prototyping with no heavy migrations.<br><span style="color:var(--accent3)">Trade-off:</span> Flexible schema vs. referential integrity must be enforced in application code, not the DB.</p>
+    </div>
   </div>
+  <div id="slide-num">7 / 17</div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SLIDE 7 — SUBMISSION FLOW
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s7">
-    <h2>Async Submission &amp; Evaluation Flow</h2>
-    <p style="margin-bottom:16px;">Submissions never block the API. The queue decouples intake from heavy evaluation work.</p>
-    <!-- Flow diagram -->
-    <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:14px;">
-      <div class="flow-box" style="min-width:110px;">
-        <strong>Student</strong>
-        <div class="sub">submits answer</div>
-      </div>
-      <div class="arrow">→</div>
-      <div class="flow-box" style="min-width:128px;border-color:rgba(88,166,255,.4);">
-        <strong>POST /submissions</strong>
-        <div class="sub">save as QUEUED<br>return <span style="color:var(--accent2)">202</span> in &lt;50ms</div>
-      </div>
-      <div class="arrow">→</div>
-      <div class="flow-box" style="min-width:110px;border-color:rgba(247,129,102,.4);">
-        <strong>BullMQ</strong>
-        <div class="sub">enqueue job</div>
-      </div>
-      <div class="arrow">→</div>
-      <div class="flow-box" style="min-width:128px;border-color:rgba(255,166,87,.4);">
-        <strong>Worker Process</strong>
-        <div class="sub">dequeue &amp; evaluate<br>2–10 seconds</div>
-      </div>
-      <div class="arrow">→</div>
-      <div class="flow-box" style="min-width:110px;border-color:rgba(63,185,80,.4);">
-        <strong>COMPLETED</strong>
-        <div class="sub">score saved<br>frontend polls</div>
+<!-- ══════════════════════════════
+     SLIDE 8 — TASK 3: ARCHITECTURAL TACTICS
+══════════════════════════════ -->
+<div class="slide" id="s8">
+  <h2>Task 3 — Architectural Tactics</h2>
+  <div class="grid-2" style="gap:10px;flex:1;align-content:start;">
+    <div class="card">
+      <div class="row gap6" style="margin-bottom:6px;"><div class="pill pill-blue">NFR-1 Performance · NFR-3 Reliability · NFR-4 Availability</div></div>
+      <h3>Tactic 1 — Async Submission Processing</h3>
+      <p style="font-size:.93rem;margin-top:5px">Submission API stores job as QUEUED and pushes to BullMQ (202 in &lt;50 ms). Worker consumes: QUEUED → RUNNING → COMPLETED/FAILED. Queue retries + dead-letter for failure handling.</p>
+    </div>
+    <div class="card">
+      <div class="row gap6" style="margin-bottom:6px;"><div class="pill pill-red">NFR-3 Security · NFR-3 Reliability</div></div>
+      <h3>Tactic 2 — Sandboxed Code Execution</h3>
+      <p style="font-size:.93rem;margin-top:5px">Code runs in Docker containers: <strong>--cpus 1 · --memory 256m · --network none · 10 s timeout</strong>. A crashing submission cannot affect other users or the API process.</p>
+    </div>
+    <div class="card">
+      <div class="row gap6" style="margin-bottom:6px;"><div class="pill pill-green">NFR-1 Performance · NFR-8 Freshness</div></div>
+      <h3>Tactic 3 — Cache-Aside with Invalidation &amp; Warm-Up</h3>
+      <p style="font-size:.93rem;margin-top:5px">Hot read paths use in-memory cache (submissions 8 s TTL, topics 60 s, summaries 15 s, max 2 000 entries LRU). Invalidation on writes. Startup warm-up preloads 8 most-active students.</p>
+    </div>
+    <div class="card">
+      <div class="row gap6" style="margin-bottom:6px;"><div class="pill pill-red">NFR-3 Security</div><div class="pill pill-purple">NFR-6 Maintainability</div></div>
+      <h3>Tactic 4 — Centralised Auth + RBAC</h3>
+      <p style="font-size:.93rem;margin-top:5px">Global middleware on <code style="font-size:.84rem;background:var(--surface2);padding:1px 5px;border-radius:3px">/api</code> enforces JWT auth except signup/signin. Admin routes add a role-check middleware. Safety guards prevent self-deletion and seed-admin removal.</p>
+    </div>
+    <div class="card" style="grid-column:1/-1;padding:11px 16px;">
+      <div class="row gap6" style="margin-bottom:6px;"><div class="pill pill-orange">NFR-4 Availability · NFR-7 Observability</div></div>
+      <h3>Tactic 5 — Runtime Observability</h3>
+      <div class="grid-3" style="gap:8px;margin-top:6px;">
+        <p style="font-size:.9rem;"><strong>Health Probes:</strong> <code style="font-size:.8rem;background:var(--surface2);padding:1px 4px;border-radius:3px">/health/live</code> always 200 · <code style="font-size:.8rem;background:var(--surface2);padding:1px 4px;border-radius:3px">/health/ready</code> returns 503 if MongoDB, Redis, or worker heartbeat is unhealthy.</p>
+        <p style="font-size:.9rem;"><strong>Structured Logs:</strong> requestId · method · path · status · latency · sessionId · userId on every API request.</p>
+        <p style="font-size:.9rem;"><strong>Worker Telemetry:</strong> 5 s heartbeat · completed/failed counters · queue depth · 5-min API latency window in monitor dashboard.</p>
       </div>
     </div>
-    <div class="grid-3" style="gap:12px;">
-      <div class="card">
-        <h3 style="color:var(--accent)">Idempotency</h3>
-        <p style="font-size:.9rem;margin-top:6px">Duplicate submissions for the same test question are rejected. Idempotency key checked before enqueue.</p>
-      </div>
-      <div class="card">
-        <h3 style="color:var(--accent5)">Retry Policy</h3>
-        <p style="font-size:.9rem;margin-top:6px">2 attempts with exponential backoff (1s base). Failed jobs move to dead-letter queue for inspection.</p>
-      </div>
-      <div class="card">
-        <h3 style="color:var(--accent2)">Status Lifecycle</h3>
-        <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:5px;">
-          <div class="pill pill-orange">QUEUED</div>
-          <span style="color:var(--text-faint)">→</span>
-          <div class="pill pill-blue">RUNNING</div>
-          <span style="color:var(--text-faint)">→</span>
-          <div class="pill pill-green">COMPLETED</div>
-        </div>
-        <div style="margin-top:6px;"><div class="pill pill-red">FAILED</div></div>
-      </div>
-    </div>
-    <div class="mt12">
-      <div class="code">
-<span class="cmt">// Worker job processor — evaluation/processSubmission.js</span>
-<span class="kw">const</span> strategy = <span class="fn">createEvaluationStrategy</span>(question.type);  <span class="cmt">// factory</span>
-<span class="kw">const</span> result   = <span class="kw">await</span> strategy.<span class="fn">evaluate</span>(submission, question); <span class="cmt">// strategy</span>
-<span class="kw">await</span> Submission.<span class="fn">findOneAndUpdate</span>({ _id }, { status: <span class="str">'COMPLETED'</span>, ...result });</div>
-    </div>
-    <div id="slide-num">7 / 13</div>
   </div>
+  <div id="slide-num">8 / 17</div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SLIDE 8 — DESIGN PATTERNS
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s8">
-    <h2>Design Patterns</h2>
-    <div class="grid-2" style="flex:1;gap:14px;">
-      <div class="col" style="gap:12px;">
-        <div class="label">Strategy Pattern — Evaluation Logic</div>
-        <div class="card" style="flex:1;">
-          <p style="font-size:.9rem;margin-bottom:12px;">Each question type has a dedicated strategy class implementing a common <code style="font-size:.82rem;background:var(--surface2);padding:1px 5px;border-radius:3px">evaluate()</code> interface. Adding a new type = new class, zero changes to the pipeline.</p>
-          <div class="grid-3" style="gap:8px;">
-            <div class="card-sm" style="text-align:center;padding:10px 8px;">
-              <div style="color:var(--accent3);font-size:1rem;margin-bottom:4px">⬡</div>
-              <div style="font-size:.84rem;font-weight:600;color:var(--text)">CodeStrategy</div>
-              <div style="font-size:.72rem;color:var(--text-muted);margin-top:3px">Docker exec<br>stdout compare</div>
-            </div>
-            <div class="card-sm" style="text-align:center;padding:10px 8px;">
-              <div style="color:var(--accent2);font-size:1rem;margin-bottom:4px">◉</div>
-              <div style="font-size:.84rem;font-weight:600;color:var(--text)">McqStrategy</div>
-              <div style="font-size:.72rem;color:var(--text-muted);margin-top:3px">Case-insensitive<br>string match</div>
-            </div>
-            <div class="card-sm" style="text-align:center;padding:10px 8px;">
-              <div style="color:var(--accent4);font-size:1rem;margin-bottom:4px">🗄</div>
-              <div style="font-size:.84rem;font-weight:600;color:var(--text)">SqlStrategy</div>
-              <div style="font-size:.72rem;color:var(--text-muted);margin-top:3px">alasql engine<br>+ normalized match</div>
-            </div>
-          </div>
-          <div class="code mt8">
-evaluate(submission, question) → { passed, score, output }</div>
-        </div>
+<!-- ══════════════════════════════
+     SLIDE 9 — C4 SYSTEM CONTEXT
+══════════════════════════════ -->
+<div class="slide" id="s9">
+  <h2>Task 3 — C4 System Context View</h2>
+  <p style="margin-bottom:10px;">Top-level view: who uses the system and what external infrastructure it depends on.</p>
+  <div class="diagram-wrap">
+    <img src="Task3/diagrams/task3-c4-system-context.png" alt="C4 System Context Diagram" />
+  </div>
+  <div style="display:flex;gap:10px;margin-top:10px;">
+    <div class="card-sm" style="flex:1;padding:8px 12px;border-left:3px solid var(--accent)"><p style="font-size:.9rem"><strong>Users:</strong> Student &amp; Admin access via Web Browser</p></div>
+    <div class="card-sm" style="flex:1;padding:8px 12px;border-left:3px solid var(--accent2)"><p style="font-size:.9rem"><strong>Platform:</strong> Interview Preparation Platform (monolith)</p></div>
+    <div class="card-sm" style="flex:1;padding:8px 12px;border-left:3px solid var(--accent5)"><p style="font-size:.9rem"><strong>Infrastructure:</strong> MongoDB · Redis · Docker Engine</p></div>
+  </div>
+  <div id="slide-num">9 / 17</div>
+</div>
+
+<!-- ══════════════════════════════
+     SLIDE 10 — C4 CONTAINER VIEW
+══════════════════════════════ -->
+<div class="slide" id="s10">
+  <h2>Task 3 — C4 Container View</h2>
+  <p style="margin-bottom:10px;">Internal containers: how the frontend, API, worker, and evaluation modules interact at runtime.</p>
+  <div class="diagram-wrap">
+    <img src="Task3/diagrams/task3-c4-container.png" alt="C4 Container Diagram" />
+  </div>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+    <div class="card-sm" style="flex:1;padding:7px 11px;"><span style="font-size:.88rem;color:var(--accent);font-weight:600">Web Frontend</span> <span style="font-size:.85rem;color:var(--text-muted)">→ Auth / Test / Eval modules</span></div>
+    <div class="card-sm" style="flex:1;padding:7px 11px;"><span style="font-size:.88rem;color:var(--accent3);font-weight:600">Eval Module</span> <span style="font-size:.85rem;color:var(--text-muted)">→ Message Broker Queue</span></div>
+    <div class="card-sm" style="flex:1;padding:7px 11px;"><span style="font-size:.88rem;color:var(--accent5);font-weight:600">Code Worker</span> <span style="font-size:.85rem;color:var(--text-muted)">→ Sandbox Containers → DB</span></div>
+    <div class="card-sm" style="flex:1;padding:7px 11px;"><span style="font-size:.88rem;color:var(--accent2);font-weight:600">Analytics</span> <span style="font-size:.85rem;color:var(--text-muted)">← MongoDB → Student/Admin Dashboards</span></div>
+  </div>
+  <div id="slide-num">10 / 17</div>
+</div>
+
+<!-- ══════════════════════════════
+     SLIDE 11 — UML: STRATEGY PATTERN
+══════════════════════════════ -->
+<div class="slide" id="s11">
+  <h2>Task 3 — UML: Strategy Pattern</h2>
+  <div style="display:flex;gap:14px;flex:1;min-height:0;">
+    <div class="diagram-wrap" style="flex:1.4;min-width:0;">
+      <img src="Task3/diagrams/task3-uml-strategy.png" alt="UML Strategy Pattern" />
+    </div>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;justify-content:center;">
+      <div class="label">Pattern 1 — Strategy</div>
+      <div class="card">
+        <h3 style="color:var(--accent)">EvaluationStrategy (interface)</h3>
+        <p style="font-size:.93rem;margin-top:5px">Defines a single <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:.84rem">evaluate(submission)</code> contract. Each question type plugs in its own implementation.</p>
       </div>
-      <div class="col" style="gap:12px;">
-        <div class="label">Factory Method Pattern — Strategy Creation</div>
-        <div class="card" style="flex:1;">
-          <p style="font-size:.9rem;margin-bottom:12px;">A single factory function maps question type strings to strategy instances. The processing pipeline depends on the abstraction, not concrete classes.</p>
-          <div class="code">
-<span class="fn">createEvaluationStrategy</span>(type) {
+      <div class="card-sm" style="border-left:3px solid var(--accent3)"><p style="font-size:.9rem"><strong>CodeStrategy</strong> — runs Docker exec, compares stdout against expected output</p></div>
+      <div class="card-sm" style="border-left:3px solid var(--accent2)"><p style="font-size:.9rem"><strong>McqStrategy</strong> — case-insensitive string match</p></div>
+      <div class="card-sm" style="border-left:3px solid var(--accent4)"><p style="font-size:.9rem"><strong>SqlStrategy</strong> — executes via alasql, normalises result rows</p></div>
+      <div class="card mt6" style="border-left:3px solid var(--accent2)">
+        <p style="font-size:.93rem;color:var(--accent2)">✓ Adding a new question type = new class only, zero changes to the evaluation pipeline.</p>
+      </div>
+    </div>
+  </div>
+  <div id="slide-num">11 / 17</div>
+</div>
+
+<!-- ══════════════════════════════
+     SLIDE 12 — UML: FACTORY + OVERVIEW
+══════════════════════════════ -->
+<div class="slide" id="s12">
+  <h2>Task 3 — UML: Strategy + Factory Overview</h2>
+  <div style="display:flex;gap:14px;flex:1;min-height:0;">
+    <div class="diagram-wrap" style="flex:1.4;min-width:0;">
+      <img src="Task3/diagrams/task3-uml-strategy-factory-overview.png" alt="UML Strategy + Factory Overview" />
+    </div>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;justify-content:center;">
+      <div class="label">Pattern 2 — Factory Method</div>
+      <div class="card">
+        <h3 style="color:var(--accent5)">createEvaluationStrategy(type)</h3>
+        <p style="font-size:.93rem;margin-top:5px">Maps the question type string to the correct strategy instance. The processing pipeline depends on the abstraction — never on concrete classes.</p>
+      </div>
+      <div class="code" style="font-size:.84rem">
+<span class="kw">function</span> <span class="fn">createEvaluationStrategy</span>(type) {
   <span class="kw">switch</span> (type) {
     <span class="kw">case</span> <span class="str">'code'</span>: <span class="kw">return new</span> <span class="fn">CodeStrategy</span>();
     <span class="kw">case</span> <span class="str">'mcq'</span>:  <span class="kw">return new</span> <span class="fn">McqStrategy</span>();
     <span class="kw">case</span> <span class="str">'sql'</span>:  <span class="kw">return new</span> <span class="fn">SqlStrategy</span>();
   }
 }</div>
-          <div class="mt8 card-sm" style="border-color:rgba(63,185,80,.3);">
-            <p style="font-size:.85rem;color:var(--accent2);">✓ Single point of strategy instantiation</p>
-            <p style="font-size:.85rem;color:var(--text-muted);margin-top:3px;">Processing pipeline depends on abstraction — never on concrete classes</p>
-          </div>
-        </div>
+      <div class="card mt6" style="border-left:3px solid var(--accent5)">
+        <p style="font-size:.93rem;color:var(--accent5)">✓ Single point of strategy instantiation. Adding a new evaluator mainly affects one mapping entry.</p>
       </div>
     </div>
-    <div id="slide-num">8 / 13</div>
   </div>
+  <div id="slide-num">12 / 17</div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SLIDE 9 — ARCHITECTURAL DECISIONS
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s9">
-    <h2>Architecture Decision Records</h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;align-content:start;">
-      <div class="card" style="padding:11px 15px;">
-        <div class="adr-header">
-          <div class="adr-num">ADR-001</div>
-          <h3 style="font-size:1rem;">Docker Sandboxing for Code Execution</h3>
-        </div>
-        <p style="font-size:.88rem;">Untrusted code isolated in containers: <strong>1 CPU · 256 MB · no network · 10s timeout</strong>. Trade-off: container startup overhead per evaluation.</p>
+<!-- ══════════════════════════════
+     SLIDE 13 — TASK 3: NFR TRACEABILITY MATRIX
+══════════════════════════════ -->
+<div class="slide" id="s13">
+  <h2>Task 3 — NFR → Tactic Traceability Matrix</h2>
+  <table style="flex:1;">
+    <thead>
+      <tr>
+        <th style="width:110px">NFR</th>
+        <th>Main Tactics</th>
+        <th>Code Evidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="pill pill-blue" style="font-size:.76rem">NFR-1 Performance</div></td>
+        <td>Async queue · cache-aside reads</td>
+        <td><code style="font-size:.8rem;background:var(--surface2);padding:1px 5px;border-radius:3px">submissions.routes · queue/worker · submissionReadService</code></td>
+      </tr>
+      <tr>
+        <td><div class="pill pill-red" style="font-size:.76rem">NFR-3 Security</div></td>
+        <td>Auth gate · role checks · Docker sandbox</td>
+        <td><code style="font-size:.8rem;background:var(--surface2);padding:1px 5px;border-radius:3px">app.js auth middleware · requireRole · dockerRunner</code></td>
+      </tr>
+      <tr>
+        <td><div class="pill pill-orange" style="font-size:.76rem">NFR-3 Reliability</div></td>
+        <td>Queue retries · dead-letter queue · execution timeout</td>
+        <td><code style="font-size:.8rem;background:var(--surface2);padding:1px 5px;border-radius:3px">queue.js · worker.js · dockerRunner.js</code></td>
+      </tr>
+      <tr>
+        <td><div class="pill pill-green" style="font-size:.76rem">NFR-4 Availability</div></td>
+        <td>Readiness endpoints · worker heartbeat</td>
+        <td><code style="font-size:.8rem;background:var(--surface2);padding:1px 5px;border-radius:3px">app.js health routes · workerTelemetry</code></td>
+      </tr>
+      <tr>
+        <td><div class="pill pill-purple" style="font-size:.76rem">NFR-6 Maintainability</div></td>
+        <td>Modular monolith boundaries · strategy + factory separation</td>
+        <td><code style="font-size:.8rem;background:var(--surface2);padding:1px 5px;border-radius:3px">module structure · strategyFactory · strategies/</code></td>
+      </tr>
+      <tr>
+        <td><div class="pill pill-orange" style="font-size:.76rem">NFR-7 Observability</div></td>
+        <td>Structured request logs · monitor dashboard · telemetry snapshots</td>
+        <td><code style="font-size:.8rem;background:var(--surface2);padding:1px 5px;border-radius:3px">app.js logger · monitor.routes · runtimeMetrics</code></td>
+      </tr>
+      <tr>
+        <td><div class="pill pill-purple" style="font-size:.76rem">NFR-8 Freshness</div></td>
+        <td>Cache invalidation on write paths</td>
+        <td><code style="font-size:.8rem;background:var(--surface2);padding:1px 5px;border-radius:3px">summaryCache + submissions/questions write handlers</code></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="card mt10" style="border-left:3px solid var(--accent2);padding:10px 14px;">
+    <p style="font-size:.93rem;">Every NFR has at least one concrete tactic with direct code evidence — no unimplemented claims.</p>
+  </div>
+  <div id="slide-num">13 / 17</div>
+</div>
+
+<!-- ══════════════════════════════
+     SLIDE 14 — TASK 4: PROTOTYPE SCOPE & STACK
+══════════════════════════════ -->
+<div class="slide" id="s14">
+  <h2>Task 4 — Prototype Scope &amp; Stack</h2>
+  <div style="display:flex;gap:12px;flex:1;min-height:0;">
+    <!-- Left: two functionalities -->
+    <div style="flex:1.1;display:flex;flex-direction:column;gap:10px;">
+      <div class="label">Two End-to-End Functionalities Implemented</div>
+      <div class="card" style="border-left:3px solid var(--accent);">
+        <h3 style="color:var(--accent)">Functionality 1 — Timed Test with Anti-Cheat</h3>
+        <ul class="dot" style="margin-top:7px;">
+          <li>Student selects topics, type, difficulty, count, and duration</li>
+          <li>Server assembles a session and enforces timing server-side</li>
+          <li>Student can run sample test cases before final submit</li>
+          <li>Tab-switch violations tracked; 2nd violation triggers auto-submit</li>
+          <li>Final submit sends all answers to the async evaluation pipeline</li>
+        </ul>
       </div>
-      <div class="card" style="padding:11px 15px;">
-        <div class="adr-header">
-          <div class="adr-num">ADR-002</div>
-          <h3 style="font-size:1rem;">Asynchronous Queue (BullMQ + Redis)</h3>
-        </div>
-        <p style="font-size:.88rem;">API returns 202 in &lt;50ms; worker evaluates asynchronously. Better burst responsiveness. Trade-off: added ops complexity (Redis + worker).</p>
-      </div>
-      <div class="card" style="padding:11px 15px;">
-        <div class="adr-header">
-          <div class="adr-num">ADR-003</div>
-          <h3 style="font-size:1rem;">Modular Monolith over Microservices</h3>
-        </div>
-        <p style="font-size:.88rem;">5-person team, 4-week sprint — microservices overhead not justified. Strict module boundaries enforce no cross-module imports. Trade-off: coupled scaling.</p>
-      </div>
-      <div class="card" style="padding:11px 15px;">
-        <div class="adr-header">
-          <div class="adr-num">ADR-004</div>
-          <h3 style="font-size:1rem;">JWT Stateless Authentication</h3>
-        </div>
-        <p style="font-size:.88rem;">Signed JWT with userId + role, 24h expiry. No DB lookup per request — fast and horizontally scalable. Trade-off: early revocation not supported.</p>
-      </div>
-      <div class="card" style="padding:11px 15px;grid-column:1/-1;">
-        <div class="adr-header">
-          <div class="adr-num">ADR-005</div>
-          <h3 style="font-size:1rem;">MongoDB Document Database</h3>
-        </div>
-        <p style="font-size:.88rem;">Mixed question types (code/MCQ/SQL) have different fields and the schema evolved rapidly during the prototype phase. Mongoose provides validation at the application layer. Trade-off: referential integrity must be enforced in app code, not the DB.</p>
+      <div class="card" style="border-left:3px solid var(--accent3);">
+        <h3 style="color:var(--accent3)">Functionality 2 — Async Submission Pipeline with Docker Sandbox</h3>
+        <ul class="dot" style="margin-top:7px;">
+          <li>Student submits code (JS / Python / C++), MCQ answer, or SQL query</li>
+          <li>API saves as QUEUED and enqueues to BullMQ — 202 in &lt;50 ms</li>
+          <li>Worker picks up the job and runs the correct evaluation strategy</li>
+          <li>Code runs in isolated Docker container with enforced resource limits</li>
+          <li>Result written back; frontend polls until status is no longer QUEUED/RUNNING</li>
+        </ul>
       </div>
     </div>
-    <div id="slide-num">9 / 13</div>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SLIDE 10 — ARCHITECTURAL TACTICS
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s10">
-    <h2>Architectural Tactics</h2>
-    <div class="grid-2" style="gap:10px;flex:1;align-content:start;">
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:6px;">
-          <div class="pill pill-blue">Performance</div>
-          <h3>Async Queue Decoupling</h3>
+    <!-- Right: stack + module structure -->
+    <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+      <div class="label">Stack</div>
+      <div class="card" style="padding:12px 14px;">
+        <div class="col gap6">
+          <div class="row gap6"><div class="pill pill-green" style="font-size:.76rem">Backend</div><span style="font-size:.9rem;color:var(--text-muted)">Node.js 20 · Express 4 · Mongoose 8</span></div>
+          <div class="row gap6"><div class="pill pill-blue" style="font-size:.76rem">Frontend</div><span style="font-size:.9rem;color:var(--text-muted)">React 18 · Vite 8 · Monaco Editor</span></div>
+          <div class="row gap6"><div class="pill pill-orange" style="font-size:.76rem">Queue</div><span style="font-size:.9rem;color:var(--text-muted)">BullMQ 5 on Redis 7</span></div>
+          <div class="row gap6"><div class="pill pill-green" style="font-size:.76rem">Database</div><span style="font-size:.9rem;color:var(--text-muted)">MongoDB 7 with Mongoose validation</span></div>
+          <div class="row gap6"><div class="pill pill-blue" style="font-size:.76rem">Exec</div><span style="font-size:.9rem;color:var(--text-muted)">Docker — node:20-alpine · python:3.12-alpine · gcc:14</span></div>
+          <div class="row gap6"><div class="pill pill-red" style="font-size:.76rem">Auth</div><span style="font-size:.9rem;color:var(--text-muted)">JWT (jsonwebtoken) · bcryptjs</span></div>
+          <div class="row gap6"><div class="pill pill-purple" style="font-size:.76rem">SQL eval</div><span style="font-size:.9rem;color:var(--text-muted)">alasql in-process engine</span></div>
+          <div class="row gap6"><div class="pill pill-green" style="font-size:.76rem">Tests</div><span style="font-size:.9rem;color:var(--text-muted)">Jest · Supertest · MongoDB Memory Server</span></div>
         </div>
-        <p style="font-size:.89rem;">Submission API returns 202 after DB save + enqueue (&lt;50ms). Worker processes heavy evaluation separately. Decouples API throughput from evaluation time.</p>
       </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:6px;">
-          <div class="pill pill-red">Security</div>
-          <h3>Sandboxed Docker Execution</h3>
-        </div>
-        <p style="font-size:.89rem;">Resource limits: <strong>CPU 1 core · RAM 256 MB · no network · 10s timeout</strong>. Runaway code cannot crash the API or host system.</p>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:6px;">
-          <div class="pill pill-green">Performance</div>
-          <h3>Cache-Aside with Invalidation</h3>
-        </div>
-        <ul class="dot">
-          <li>Submissions list: <strong>8s TTL</strong></li>
-          <li>Question topics: <strong>60s TTL</strong></li>
-          <li>Student summaries: <strong>15s TTL</strong></li>
-          <li>Max 2000 entries (LRU eviction)</li>
-          <li>Startup warm-up: 8 most-active students</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:6px;">
-          <div class="pill pill-purple">Security</div>
-          <h3>Centralised Auth + RBAC</h3>
-        </div>
-        <p style="font-size:.89rem;">Global middleware on <code style="font-size:.82rem;background:var(--surface2);padding:1px 5px;border-radius:3px">/api</code> requires valid JWT (except signup/signin). Admin routes add second role-check middleware. Safety guards prevent self-deletion and seed admin removal.</p>
-      </div>
-      <div class="card" style="grid-column:1/-1;padding:10px 14px;">
-        <div class="row gap4" style="margin-bottom:6px;">
-          <div class="pill pill-orange">Observability</div>
-          <h3>Runtime Observability Built-In</h3>
-        </div>
-        <div class="grid-3" style="gap:8px;">
-          <div><p style="font-size:.85rem;"><strong>Health Probes</strong><br><code style="font-size:.71rem;background:var(--surface2);padding:1px 4px;border-radius:3px">/health/live</code> always 200 · <code style="font-size:.71rem;background:var(--surface2);padding:1px 4px;border-radius:3px">/health/ready</code> returns 503 if any dep. is down</p></div>
-          <div><p style="font-size:.85rem;"><strong>Structured Logs</strong><br>requestId · method · path · status · latency · sessionId · userId on every request</p></div>
-          <div><p style="font-size:.85rem;"><strong>Worker Telemetry</strong><br>5s heartbeat · completed/failed counters · queue depth · 5-min API latency window</p></div>
-        </div>
+      <div class="label" style="margin-top:2px;">Backend Modules</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;">
+        <span class="pill pill-blue">auth</span><span class="pill pill-green">users</span><span class="pill pill-purple">questions</span><span class="pill pill-orange">tests</span><span class="pill pill-red">submissions</span><span class="pill pill-blue">evaluation</span><span class="pill pill-green">analytics</span><span class="pill pill-orange">monitor</span><span class="pill pill-purple">shared</span>
       </div>
     </div>
-    <div id="slide-num">10 / 13</div>
   </div>
+  <div id="slide-num">14 / 17</div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SLIDE 11 — NFR METRICS
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s11">
-    <h2>Non-Functional Requirements</h2>
-    <p style="margin-bottom:12px;">Quantified targets with traceable evidence in the implementation.</p>
-    <table style="font-size:.82rem;">
-      <thead>
-        <tr>
-          <th style="padding:7px 11px;white-space:nowrap;">NFR</th>
-          <th style="padding:7px 11px;">Metric</th>
-          <th style="padding:7px 11px;">Target / Constraint</th>
-          <th style="padding:7px 11px;">Evidence</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="padding:5px 11px;"><div class="pill pill-blue" style="display:inline-flex;font-size:.71rem;">Performance</div></td>
-          <td style="padding:5px 11px;">Submission API latency</td>
-          <td style="padding:5px 11px;" class="nfr-met">p95 ≤ 500 ms</td>
-          <td style="padding:5px 11px;">Monitor dashboard <code style="font-size:.71rem;background:var(--surface2);padding:1px 4px;border-radius:3px">/api/monitor/dashboard</code></td>
-        </tr>
-        <tr>
-          <td style="padding:5px 11px;"><div class="pill pill-blue" style="display:inline-flex;font-size:.71rem;">Performance</div></td>
-          <td style="padding:5px 11px;">Evaluation time budget</td>
-          <td style="padding:5px 11px;" class="nfr-met">≤ 10s hard timeout</td>
-          <td style="padding:5px 11px;"><code style="font-size:.71rem;background:var(--surface2);padding:1px 4px;border-radius:3px">DOCKER_TIMEOUT_SEC</code> config</td>
-        </tr>
-        <tr>
-          <td style="padding:5px 11px;"><div class="pill pill-green" style="display:inline-flex;font-size:.71rem;">Scalability</div></td>
-          <td style="padding:5px 11px;">Parallel evaluation capacity</td>
-          <td style="padding:5px 11px;" class="nfr-met">worker concurrency = 2</td>
-          <td style="padding:5px 11px;">Inspect <code style="font-size:.71rem;background:var(--surface2);padding:1px 4px;border-radius:3px">WORKER_CONCURRENCY</code> config</td>
-        </tr>
-        <tr>
-          <td style="padding:5px 11px;"><div class="pill pill-red" style="display:inline-flex;font-size:.71rem;">Security</div></td>
-          <td style="padding:5px 11px;">Sandbox isolation</td>
-          <td style="padding:5px 11px;" class="nfr-met">1 CPU · 256 MB · no network</td>
-          <td style="padding:5px 11px;">Docker flags: <code style="font-size:.71rem;background:var(--surface2);padding:1px 4px;border-radius:3px">--cpus 1 --memory 256m --network none</code></td>
-        </tr>
-        <tr>
-          <td style="padding:5px 11px;"><div class="pill pill-red" style="display:inline-flex;font-size:.71rem;">Security</div></td>
-          <td style="padding:5px 11px;">API protection coverage</td>
-          <td style="padding:5px 11px;" class="nfr-met">100% except signup/signin</td>
-          <td style="padding:5px 11px;"><code style="font-size:.71rem;background:var(--surface2);padding:1px 4px;border-radius:3px">requireAuth</code> middleware on all routes</td>
-        </tr>
-        <tr>
-          <td style="padding:5px 11px;"><div class="pill pill-green" style="display:inline-flex;font-size:.71rem;">Availability</div></td>
-          <td style="padding:5px 11px;">Readiness dependency gate</td>
-          <td style="padding:5px 11px;" class="nfr-met">503 if dep. unhealthy</td>
-          <td style="padding:5px 11px;">Dependency-aware <code style="font-size:.71rem;background:var(--surface2);padding:1px 4px;border-radius:3px">/health/ready</code></td>
-        </tr>
-        <tr>
-          <td style="padding:5px 11px;"><div class="pill pill-orange" style="display:inline-flex;font-size:.71rem;">Observability</div></td>
-          <td style="padding:5px 11px;">Runtime telemetry window</td>
-          <td style="padding:5px 11px;" class="nfr-met">5-min latency &amp; worker snapshots</td>
-          <td style="padding:5px 11px;">Monitor dashboard response</td>
-        </tr>
-        <tr>
-          <td style="padding:5px 11px;"><div class="pill pill-purple" style="display:inline-flex;font-size:.71rem;">Freshness</div></td>
-          <td style="padding:5px 11px;">Cache staleness control</td>
-          <td style="padding:5px 11px;" class="nfr-met">submissions 8s · topics 60s TTL</td>
-          <td style="padding:5px 11px;">Verify cache TTLs &amp; invalidation</td>
-        </tr>
-      </tbody>
-    </table>
-    <div id="slide-num">11 / 13</div>
+<!-- ══════════════════════════════
+     SLIDE 15 — TASK 4: ASYNC EVALUATION FLOW
+══════════════════════════════ -->
+<div class="slide" id="s15">
+  <h2>Task 4 — Async Evaluation Flow (End-to-End)</h2>
+  <!-- Step flow -->
+  <div style="display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:14px;flex-wrap:nowrap;">
+    <div class="flow-box" style="min-width:105px;border-color:rgba(88,166,255,.4)"><strong>POST /submissions</strong><div class="sub">Student submits answer</div></div>
+    <div class="arrow">→</div>
+    <div class="flow-box" style="min-width:115px;border-color:rgba(63,185,80,.4)"><strong>Save QUEUED</strong><div class="sub">MongoDB write<br>return 202 &lt;50 ms</div></div>
+    <div class="arrow">→</div>
+    <div class="flow-box" style="min-width:105px;border-color:rgba(247,129,102,.4)"><strong>BullMQ Enqueue</strong><div class="sub">job pushed to Redis queue</div></div>
+    <div class="arrow">→</div>
+    <div class="flow-box" style="min-width:115px;border-color:rgba(255,166,87,.4)"><strong>Worker Dequeues</strong><div class="sub">atomic QUEUED → RUNNING<br>idempotency guard</div></div>
+    <div class="arrow">→</div>
+    <div class="flow-box" style="min-width:105px;border-color:rgba(210,168,255,.4)"><strong>Strategy.evaluate()</strong><div class="sub">factory picks strategy<br>by question type</div></div>
+    <div class="arrow">→</div>
+    <div class="flow-box" style="min-width:105px;border-color:rgba(63,185,80,.4)"><strong>COMPLETED</strong><div class="sub">score + output saved<br>cache invalidated</div></div>
   </div>
-
-  <!-- ══════════════════════════════════════════
-       SLIDE 12 — DATABASE MODELS
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s12">
-    <h2>Data Models</h2>
-    <div class="grid-3" style="gap:10px;flex:1;align-content:start;">
-      <div class="card">
-        <h3 style="color:var(--accent);margin-bottom:8px;">User</h3>
-        <ul class="dot">
-          <li>userId, email</li>
-          <li>passwordHash (bcrypt)</li>
-          <li>role: <em>student | admin</em></li>
-          <li>createdAt</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3 style="color:var(--accent2);margin-bottom:8px;">Question</h3>
-        <ul class="dot">
-          <li>questionId, title, type</li>
-          <li>description, difficulty, topics[ ]</li>
-          <li>correctAnswer</li>
-          <li>sampleTestCases[ ], hiddenTestCases[ ]</li>
-          <li>active: boolean</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3 style="color:var(--accent4);margin-bottom:8px;">Submission</h3>
-        <ul class="dot">
-          <li>submissionId, userId</li>
-          <li>questionId, answers</li>
-          <li>status: QUEUED → COMPLETED</li>
-          <li>score, passed: boolean</li>
-          <li>output (execution log)</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3 style="color:var(--accent5);margin-bottom:8px;">TestSession</h3>
-        <ul class="dot">
-          <li>sessionId, userId</li>
-          <li>questions[ ] (shuffled)</li>
-          <li>startTime, duration</li>
-          <li>violations: number</li>
-          <li>completed: boolean</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3 style="color:var(--accent3);margin-bottom:8px;">ViolationAudit</h3>
-        <ul class="dot">
-          <li>violationId, sessionId</li>
-          <li>userId</li>
-          <li>type: tab-switch | focus-loss</li>
-          <li>timestamp</li>
-        </ul>
-      </div>
-      <div class="card" style="background:var(--surface2);">
-        <div class="label" style="margin-bottom:10px;">Relationships</div>
-        <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;">
-          User <span style="color:var(--text-faint)">→</span> TestSession (1:N)<br>
-          TestSession <span style="color:var(--text-faint)">→</span> Submission (1:N)<br>
-          TestSession <span style="color:var(--text-faint)">→</span> ViolationAudit (1:N)<br>
-          Question <span style="color:var(--text-faint)">→</span> Submission (1:N)<br>
-          <br>
-          <em style="color:var(--text-faint)">Referential integrity enforced at application layer (MongoDB)</em>
-        </p>
-      </div>
+  <div class="grid-2" style="gap:12px;">
+    <div class="card">
+      <h3 style="color:var(--accent3);margin-bottom:8px;">Docker Code Execution (CodeStrategy)</h3>
+      <ul class="dot">
+        <li>dockerRunner.runCodeInDocker() spawns a short-lived container</li>
+        <li>Code piped via stdin; stdout/stderr + exit code collected</li>
+        <li>Container constraints: 1 CPU · 256 MB · no network · 10 s timeout</li>
+        <li>Container is removed immediately after execution</li>
+      </ul>
     </div>
-    <div id="slide-num">12 / 13</div>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SLIDE 13 — KEY INSIGHTS / CONCLUSION
-  ══════════════════════════════════════════ -->
-  <div class="slide" id="s13">
-    <h2>Key Insights &amp; Takeaways</h2>
-    <div class="grid-2" style="gap:10px;flex:1;align-content:start;">
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:7px;">
-          <div class="icon-circle" style="background:rgba(88,166,255,.12);color:var(--accent);width:28px;height:28px;font-size:.85rem">🐳</div>
-          <h3>Safety is Foundational</h3>
-        </div>
-        <p style="font-size:.9rem;">Docker sandboxing with CPU/memory/network/timeout limits is what makes untrusted code execution at scale safe. Without it, a single malicious submission could take down the server.</p>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:7px;">
-          <div class="icon-circle" style="background:rgba(255,166,87,.12);color:var(--accent5);width:28px;height:28px;font-size:.85rem">⚡</div>
-          <h3>Async Trades Simplicity for Scale</h3>
-        </div>
-        <p style="font-size:.9rem;">The BullMQ queue delivers sub-500ms API response times under concurrent load, but adds operational complexity — Redis, a worker process, and dead-letter management.</p>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:7px;">
-          <div class="icon-circle" style="background:rgba(63,185,80,.12);color:var(--accent2);width:28px;height:28px;font-size:.85rem">🏗</div>
-          <h3>Architecture Enables Teamwork</h3>
-        </div>
-        <p style="font-size:.9rem;">The modular monolith with strict module boundaries let 5 developers work in parallel with minimal merge conflicts — microservices would have been unnecessary overhead for this timeline.</p>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:7px;">
-          <div class="icon-circle" style="background:rgba(210,168,255,.12);color:var(--accent4);width:28px;height:28px;font-size:.85rem">🔑</div>
-          <h3>Stateless Auth Scales Horizontally</h3>
-        </div>
-        <p style="font-size:.9rem;">JWT tokens carry role information, so no DB lookup per request. Multiple API instances can run behind a load balancer with no shared session storage required.</p>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:7px;">
-          <div class="icon-circle" style="background:rgba(247,129,102,.12);color:var(--accent3);width:28px;height:28px;font-size:.85rem">🔭</div>
-          <h3>Observability from Day One</h3>
-        </div>
-        <p style="font-size:.9rem;">Health probes, structured logs, and telemetry dashboards were built into the design, not added after. This makes debugging and incident response significantly faster in production.</p>
-      </div>
-      <div class="card">
-        <div class="row gap4" style="margin-bottom:7px;">
-          <div class="icon-circle" style="background:rgba(88,166,255,.12);color:var(--accent);width:28px;height:28px;font-size:.85rem">📐</div>
-          <h3>Patterns Preserve Extensibility</h3>
-        </div>
-        <p style="font-size:.9rem;">Strategy + Factory patterns keep evaluation logic isolated. Adding a new question format requires only a new strategy class — zero changes to the processing pipeline.</p>
-      </div>
+    <div class="card">
+      <h3 style="color:var(--accent5);margin-bottom:8px;">Reliability Controls</h3>
+      <ul class="dot">
+        <li>Max 2 attempts per job with exponential backoff (1 s, 2 s)</li>
+        <li>Permanently failed jobs → dead-letter queue for inspection</li>
+        <li>Worker heartbeat every 5 s; stale after 30 s → /health/ready returns 503</li>
+        <li>Frontend polls GET /api/submissions/:id until no longer QUEUED/RUNNING</li>
+      </ul>
     </div>
-    <div id="slide-num">13 / 13</div>
   </div>
+  <div class="code mt10">
+<span class="cmt">// evaluation/processSubmission.js — core pipeline</span>
+<span class="kw">const</span> strategy = <span class="fn">createEvaluationStrategy</span>(question.type);   <span class="cmt">// factory</span>
+<span class="kw">const</span> result   = <span class="kw">await</span> strategy.<span class="fn">evaluate</span>(submission, question); <span class="cmt">// strategy</span>
+<span class="kw">await</span> Submission.<span class="fn">findOneAndUpdate</span>({ _id }, { status: <span class="str">'COMPLETED'</span>, ...result });</div>
+  <div id="slide-num">15 / 17</div>
+</div>
+
+<!-- ══════════════════════════════
+     SLIDE 16 — TASK 4: ARCHITECTURE COMPARISON
+══════════════════════════════ -->
+<div class="slide" id="s16">
+  <h2>Task 4 — Architecture Comparison</h2>
+  <p style="margin-bottom:12px;">Implemented (Async Queue) vs. Alternative (Synchronous In-Request Evaluation)</p>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:200px">Aspect</th>
+        <th>Implemented — Async Queue</th>
+        <th>Alternative — Synchronous In-Request</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Submission latency</strong></td>
+        <td class="nfr-met">Under 50 ms (save + enqueue only)</td>
+        <td style="color:var(--accent3)">2–10+ s (waits for Docker evaluation to finish)</td>
+      </tr>
+      <tr>
+        <td><strong>API under load</strong></td>
+        <td class="nfr-met">High — evaluation runs off the request thread</td>
+        <td style="color:var(--accent3)">Low — long evaluations block threads</td>
+      </tr>
+      <tr>
+        <td><strong>Failure isolation</strong></td>
+        <td class="nfr-met">Worker failure does not affect the API process</td>
+        <td style="color:var(--accent3)">Evaluation failure propagates as 500 to the student</td>
+      </tr>
+      <tr>
+        <td><strong>Recovery</strong></td>
+        <td class="nfr-met">Queue retries · dead-letter queue · worker restart</td>
+        <td style="color:var(--accent3)">Client retry only — no server-side retry</td>
+      </tr>
+      <tr>
+        <td><strong>Horizontal scaling</strong></td>
+        <td class="nfr-met">Worker concurrency + instance count tunable independently</td>
+        <td style="color:var(--accent3)">Coupled to API thread-pool size</td>
+      </tr>
+      <tr>
+        <td><strong>Operational complexity</strong></td>
+        <td style="color:var(--accent3)">Higher — Redis + worker lifecycle + dead-letter monitoring</td>
+        <td class="nfr-met">Lower — single process, no queue infrastructure</td>
+      </tr>
+      <tr>
+        <td><strong>Cold-start</strong></td>
+        <td style="color:var(--accent3)">Worker must be started separately</td>
+        <td class="nfr-met">No separate worker — simpler startup</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="card mt10" style="border-left:3px solid var(--accent2);padding:11px 16px;">
+    <p style="font-size:.97rem;"><strong style="color:var(--accent2)">Verdict:</strong> The async queue delivers better responsiveness and failure isolation under realistic concurrent load. The operational cost (Redis + worker + dead-letter) is manageable and justified for a platform where hundreds of students submit simultaneously.</p>
+  </div>
+  <div id="slide-num">16 / 17</div>
+</div>
+
+<!-- ══════════════════════════════
+     SLIDE 17 — KEY INSIGHTS & LESSONS LEARNED
+══════════════════════════════ -->
+<div class="slide" id="s17">
+  <h2>Key Insights &amp; Lessons Learned</h2>
+  <div class="grid-2" style="flex:1;gap:10px;align-content:start;">
+    <div class="card">
+      <div class="row gap6" style="margin-bottom:7px;"><div class="icon-circle" style="background:rgba(88,166,255,.12);color:var(--accent);width:30px;height:30px;font-size:.9rem">🐳</div><h3>Safety is Foundational</h3></div>
+      <p style="font-size:.95rem">Docker sandboxing with CPU/memory/network/timeout limits makes untrusted code execution safe. Without it a single malicious submission could crash the server.</p>
+    </div>
+    <div class="card">
+      <div class="row gap6" style="margin-bottom:7px;"><div class="icon-circle" style="background:rgba(255,166,87,.12);color:var(--accent5);width:30px;height:30px;font-size:.9rem">⚡</div><h3>Async Trades Simplicity for Scale</h3></div>
+      <p style="font-size:.95rem">BullMQ queue delivers sub-50 ms API responses under concurrent load, but adds Redis + worker process + dead-letter management to operations.</p>
+    </div>
+    <div class="card">
+      <div class="row gap6" style="margin-bottom:7px;"><div class="icon-circle" style="background:rgba(63,185,80,.12);color:var(--accent2);width:30px;height:30px;font-size:.9rem">🏗</div><h3>Modular Monolith Enables Teamwork</h3></div>
+      <p style="font-size:.95rem">Strict module boundaries let 5 developers work in parallel with minimal merge conflicts. Microservices would have been unnecessary overhead for a 4-week sprint.</p>
+    </div>
+    <div class="card">
+      <div class="row gap6" style="margin-bottom:7px;"><div class="icon-circle" style="background:rgba(210,168,255,.12);color:var(--accent4);width:30px;height:30px;font-size:.9rem">🔑</div><h3>Stateless JWT Scales Horizontally</h3></div>
+      <p style="font-size:.95rem">Role embedded in the token means no DB lookup per request. Multiple API instances run behind a load balancer with no shared session storage required.</p>
+    </div>
+    <div class="card">
+      <div class="row gap6" style="margin-bottom:7px;"><div class="icon-circle" style="background:rgba(247,129,102,.12);color:var(--accent3);width:30px;height:30px;font-size:.9rem">📊</div><h3>Cache Invalidation is Hard</h3></div>
+      <p style="font-size:.95rem">Cache population is easy; keeping it consistent after writes is not. Explicit invalidation on every write path and short TTLs are both required to avoid stale responses.</p>
+    </div>
+    <div class="card">
+      <div class="row gap6" style="margin-bottom:7px;"><div class="icon-circle" style="background:rgba(88,166,255,.12);color:var(--accent);width:30px;height:30px;font-size:.9rem">📐</div><h3>Patterns Preserve Extensibility</h3></div>
+      <p style="font-size:.95rem">Strategy + Factory patterns isolate each evaluator. Adding a new question type = one new class, zero changes to the processing pipeline or submission API.</p>
+    </div>
+  </div>
+  <div id="slide-num">17 / 17</div>
+</div>
 
 </div><!-- /deck -->
 
-<!-- Navigation -->
 <div id="nav">
   <button class="nav-btn" id="btn-prev" disabled>← Prev</button>
   <div id="progress-bar"><div id="progress-fill"></div></div>
-  <span id="slide-counter">1 / 13</span>
+  <span id="slide-counter">1 / 17</span>
   <button class="nav-btn" id="btn-next">Next →</button>
 </div>
 
@@ -1095,13 +935,10 @@ evaluate(submission, question) → { passed, score, output }</div>
     if (n < 0 || n >= total) return;
     slides[cur].classList.remove('active');
     slides[cur].classList.add('exit');
-
     const prev = cur;
     cur = n;
-
     setTimeout(() => slides[prev].classList.remove('exit'), 400);
     slides[cur].classList.add('active');
-
     document.getElementById('btn-prev').disabled = cur === 0;
     document.getElementById('btn-next').disabled = cur === total - 1;
     document.getElementById('slide-counter').textContent = `${cur + 1} / ${total}`;
@@ -1110,7 +947,6 @@ evaluate(submission, question) → { passed, score, output }</div>
 
   document.getElementById('btn-prev').addEventListener('click', () => goTo(cur - 1));
   document.getElementById('btn-next').addEventListener('click', () => goTo(cur + 1));
-
   document.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(cur + 1);
     if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(cur - 1);

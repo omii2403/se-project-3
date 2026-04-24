@@ -229,7 +229,7 @@ Task4/backend/src/evaluation/dockerRunner.js
 ```
 
 NFR mapping:
-- NFR2 Security: untrusted code is isolated from API process and host network.
+- NFR3 Security: untrusted code is isolated from API process and host network.
 - NFR3 Reliability: timeouts and limits reduce risk of runaway execution.
 
 Trade-off:
@@ -274,7 +274,7 @@ Task4/backend/src/users/users.routes.js
 ```
 
 NFR mapping:
-- NFR2 Security: protected APIs are not accessible without valid token/role.
+- NFR3 Security: protected APIs are not accessible without valid token/role.
 - NFR6 Maintainability: centralized gate reduces repeated route-level security code.
 
 Trade-off:
@@ -363,7 +363,7 @@ Diagram source: [Task3/diagrams/task3-uml-factory.mmd](Task3/diagrams/task3-uml-
 | NFR | Main Tactics | Evidence |
 |---|---|---|
 | NFR1 Performance | Async queue, cache-aside reads | submissions routes, queue/worker, submissionReadService |
-| NFR2 Security | Auth gate, role checks, Docker sandbox | app.js auth middleware, requireRole, dockerRunner |
+| NFR3 Security | Auth gate, role checks, Docker sandbox | app.js auth middleware, requireRole, dockerRunner |
 | NFR3 Reliability | Queue retries, dead-letter queue, execution timeout | queue.js, worker.js, dockerRunner.js |
 | NFR4 Availability | Readiness endpoints, worker heartbeat metrics | app.js health endpoints, workerTelemetry |
 | NFR6 Maintainability | Modular monolith boundaries, strategy + factory separation | module structure, strategyFactory, strategies |

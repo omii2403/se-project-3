@@ -438,19 +438,17 @@ backend/src/
 
 These values define the observable performance and security boundaries of the prototype.
 
-| Parameter | Default Value | Effect |
-|---|---|---|
-| DOCKER_TIMEOUT_SEC | 10 s | Maximum code execution time per submission |
-| WORKER_CONCURRENCY | 2 | Parallel jobs the worker processes simultaneously |
-| SUBMISSIONS_LIST_CACHE_TTL_MS | 8000 ms | TTL for paginated submissions list cache |
-| QUESTION_TOPICS_CACHE_TTL_MS | 60000 ms | TTL for question topics list cache |
-| SUMMARY_CACHE_TTL_MS | 15000 ms | TTL for student/admin summary caches |
-| SUMMARY_CACHE_MAX_ENTRIES | 2000 | Maximum cache entries before LRU eviction |
-| WORKER_HEARTBEAT_INTERVAL_MS | 5000 ms | How frequently the worker writes a heartbeat to Redis |
-| WORKER_READY_STALE_MS | 30000 ms | Worker is considered not ready if heartbeat is older than this |
-| JWT_EXPIRES_IN | 24h | Token lifetime; student must re-login after this |
-| Queue attempts | 2 | Max retries per submission job before dead-letter |
-| Queue backoff | exponential | Base delay 1000 ms, doubles on each retry |
+- **DOCKER_TIMEOUT_SEC (10 s):** Maximum code execution time per submission.
+- **WORKER_CONCURRENCY (2):** Parallel jobs the worker processes simultaneously.
+- **SUBMISSIONS_LIST_CACHE_TTL_MS (8000 ms):** TTL for paginated submissions list cache.
+- **QUESTION_TOPICS_CACHE_TTL_MS (60000 ms):** TTL for question topics list cache.
+- **SUMMARY_CACHE_TTL_MS (15000 ms):** TTL for student/admin summary caches.
+- **SUMMARY_CACHE_MAX_ENTRIES (2000):** Maximum cache entries before LRU eviction.
+- **WORKER_HEARTBEAT_INTERVAL_MS (5000 ms):** How frequently the worker writes a heartbeat to Redis.
+- **WORKER_READY_STALE_MS (30000 ms):** Worker is considered not ready if heartbeat is older than this.
+- **JWT_EXPIRES_IN (24h):** Token lifetime; student must re-login after this.
+- **Queue attempts (2):** Max retries per submission job before dead-letter.
+- **Queue backoff (exponential):** Base delay 1000 ms, doubles on each retry.
 
 ## 4.4 Async Evaluation Flow (End-to-End)
 

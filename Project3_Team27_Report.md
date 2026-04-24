@@ -10,52 +10,52 @@ GitHub Repository: [https://github.com/omii2403/se-project-3.git](https://github
 
 | ID | Requirement | Architectural Significance |
 |---|---|---|
-| FR-1 | Students and admins can register, log in, verify tokens, and manage their profile | Drives authentication, token verification, and role propagation across protected functionality |
+| FR-1 | Students and admins can register, log in, verify tokens and manage their profile | Drives authentication, profile management and role-aware protected access |
 | FR-2 | Protected functionality requires a valid JWT, and admin-only functionality rejects student access | Drives global access control and role-based authorization |
-| FR-3 | Admins can create, edit, deactivate, and permanently delete questions | Drives question bank CRUD, role protection, and write-path invalidation |
+| FR-3 | Admins can create, edit, deactivate and permanently delete questions | Drives question bank CRUD, role protection and content lifecycle management |
 | FR-4 | The question bank supports code, MCQ, and SQL questions | Drives flexible storage and evaluation logic for mixed question types |
-| FR-5 | Students can start timed tests filtered by topic, type, difficulty, count, and duration | Drives test session generation and server-side timing logic |
+| FR-5 | Students can start timed tests filtered by topic, type, difficulty, count and duration | Drives test session generation and timing control |
 | FR-6 | Test creation prefers unseen questions for a student, while allowing controlled repetition when needed | Drives question-selection policy and test continuity when the pool is limited |
 | FR-7 | Students can run sample test cases for code questions during an active timed session | Drives secure sample-run support in the test flow |
 | FR-8 | Timed tests record anti-cheat violations and auto-submit on the second violation | Drives test integrity enforcement and violation tracking |
 | FR-9 | Final timed-test submission stores answers, evaluates them, and returns a summary | Drives evaluation, persistence, and result reporting |
-| FR-10 | Submission APIs support idempotency keys and queue status tracking | Drives duplicate-prevention behavior and async job visibility |
-| FR-11 | Admins can manage users and students with safety checks | Drives admin-only user management and delete safeguards |
-| FR-12 | Students can view performance history and weak areas | Drives analytics aggregation and read-side caching |
+| FR-10 | Submission APIs support idempotency keys and queue status tracking | Drives duplicate-prevention behavior and asynchronous processing visibility |
+| FR-11 | Admins can manage users and students with safety checks | Drives admin-only user management and safety safeguards |
+| FR-12 | Students can view performance history and weak areas | Drives analytics aggregation and read-side reporting |
 
 ### Architecturally Significant Requirements
 
-The most significant requirements are safe code execution, async evaluation, and exam integrity. Safe code execution requires isolated sandboxing so untrusted code does not affect the host process. Async evaluation is needed because code execution is slow compared with normal API responses, so the system must decouple submission creation from evaluation. Exam integrity requires server-side enforcement of timing and anti-cheat rules so the timed test flow cannot be bypassed on the client.
+The most significant requirements are safe execution of student code, asynchronous evaluation, and exam integrity. Safe execution requires isolating untrusted code so one submission cannot affect the rest of the system. Asynchronous evaluation is needed because code execution is slow compared with normal API responses, so the system must decouple submission creation from evaluation. Exam integrity requires server-side enforcement of timing and anti-cheat rules so the timed test flow cannot be bypassed on the client.
 
 ## 1.2 Non-Functional Requirements
 
 | ID | Requirement | Architectural Significance |
 |---|---|---|
-| NFR-1 | Performance: results within 5 seconds | Drives async queue decoupling, cache-aside reads, startup warm-up, and Docker timeout limits |
-| NFR-2 | Scalability: services scale independently | Drives worker concurrency, queue-based decoupling, and stateless JWT design |
-| NFR-3 | Security: Docker sandbox and JWT auth | Drives sandbox resource limits, network isolation, and global API auth middleware |
-| NFR-4 | Availability: 99.5% uptime target | Drives health and readiness endpoints, worker heartbeat, retries, and dead-letter handling |
-| NFR-5 | Usability: responsive flow with no training needed | Drives role-separated frontend routes and clear student/admin flows |
+| NFR-1 | Performance: results within 5 seconds | Drives fast request handling, background processing, and cache-assisted reads |
+| NFR-2 | Scalability: services scale independently | Drives workload decoupling, concurrent processing, and stateless request handling |
+| NFR-3 | Security: sandboxed execution and authenticated access | Drives execution isolation, access control, and request protection |
+| NFR-4 | Availability: 99.5% uptime target | Drives health checks, worker liveness tracking, retries, and failure handling |
+| NFR-5 | Usability: responsive flow with no training needed | Drives role-separated interfaces and clear student/admin flows |
 | NFR-6 | Maintainability: modular codebase | Drives the modular monolith structure with strict internal boundaries |
-| NFR-7 | Observability: structured logs and telemetry | Drives request logging, runtime metrics, and worker monitoring |
-| NFR-8 | Freshness: reads reflect recent writes quickly | Drives cache invalidation on write paths |
+| NFR-7 | Observability: structured logs and telemetry | Drives request logging, runtime metrics, and operational monitoring |
+| NFR-8 | Freshness: reads reflect recent writes quickly | Drives cache invalidation and low-staleness reads |
 
 ### Quantified System-Level Constraints
 
 | NFR | Metric | Target / Constraint | Acceptance Check |
 |---|---|---|---|
-| NFR-1 Performance | Submission acknowledgement latency | p95 <= 500 ms under normal load | Monitor the API latency snapshot |
-| NFR-1 Performance | Evaluation time budget per question | hard timeout <= 10 s | Verify timeout behavior in evaluator results |
-| NFR-2 Scalability | Parallel evaluation capacity | worker concurrency = 2 by default | Inspect worker configuration |
-| NFR-3 Security | Sandbox isolation | 100% code runs with 1 CPU, 256 MB memory, and no network access | Audit Docker runner settings |
-| NFR-3 Security | API protection coverage | 100% of protected API requires JWT except signup/signin | Route and middleware audit |
-| NFR-4 Availability | Readiness dependency gate | readiness returns 503 when MongoDB, Redis, or worker is unhealthy | Stop a dependency and verify response |
-| NFR-7 Observability | Runtime telemetry window | 5-minute latency and worker telemetry snapshots available | Check monitor dashboard response |
-| NFR-8 Freshness | Cache staleness control | submissions cache TTL 8000 ms, topics cache TTL 60000 ms | Verify cache TTLs and invalidation behavior |
+| NFR-1 Performance | Submission acknowledgement latency | p95 <= 500 ms under normal load | Monitor the response latency snapshot |
+| NFR-1 Performance | Evaluation time budget per question | hard timeout <= 10 s | Verify timeout behavior in evaluation results |
+| NFR-2 Scalability | Parallel processing capacity | configurable concurrency = 2 by default | Inspect processing configuration |
+| NFR-3 Security | Isolation enforcement | all code runs in an isolated execution environment | Audit execution settings |
+| NFR-3 Security | Access protection coverage | all protected API routes require authentication except public entry points | Route and middleware audit |
+| NFR-4 Availability | Readiness dependency gate | readiness returns 503 when a required dependency or worker is unhealthy | Stop a dependency and verify response |
+| NFR-7 Observability | Runtime telemetry window | 5-minute latency and worker telemetry snapshots available | Check the monitoring dashboard response |
+| NFR-8 Freshness | Cache staleness control | read caches use short TTLs and invalidation on writes | Verify TTLs and invalidation behavior |
 
 ## 1.3 Subsystem Overview
 
-The platform is implemented as a modular monolith backend with a React frontend and an async worker for heavy evaluation.
+The platform is implemented as a modular monolith backend with a frontend and a background worker for heavy evaluation.
 
 ### Presentation Subsystem
 The frontend provides role-aware flows for students and admins. Student pages cover login, test building, timed tests, submissions, analytics, and profile. Admin pages cover question management, user management, and platform monitoring.
@@ -67,16 +67,16 @@ The auth module handles registration, login, token verification, and profile-rel
 The questions module manages code, MCQ, and SQL questions. The tests module handles timed session creation, question delivery, sample runs, anti-cheat violations, and final submission.
 
 ### Evaluation and Queue Subsystem
-The submissions module accepts submission requests and enqueues them for processing. The evaluation module consumes queued jobs, applies the correct strategy, and writes back results. Code evaluation runs inside Docker.
+The submissions module accepts submission requests and enqueues them for processing. The evaluation module consumes queued jobs, applies the correct strategy, and writes back results. Code evaluation runs in an isolated execution environment.
 
 ### Analytics and Monitoring Subsystem
 The analytics module provides student summaries and admin overviews. The monitor module exposes operational telemetry, queue state, and worker health information.
 
 ### Data and Cache Subsystem
-MongoDB stores the persistent domain data. In-memory caches improve read performance for summaries, submissions lists, and question topics, with invalidation on writes.
+The primary data store keeps the persistent domain data. In-memory caches improve read performance for summaries, submissions lists, and question topics, with invalidation on writes.
 
 ### Runtime Dependencies
-The system depends on MongoDB for persistent storage, Redis for queueing and telemetry, and Docker for isolated code execution.
+The system depends on persistent storage, queue infrastructure, and isolated code execution support.
 
 # Task 2: Architecture Framework
 
@@ -94,19 +94,35 @@ The system depends on MongoDB for persistent storage, Redis for queueing and tel
 ### Architecture Viewpoints and Views
 
 #### Logical Viewpoint
-This viewpoint addresses maintainability and role isolation. The backend is organized into modules such as auth, users, questions, tests, submissions, analytics, monitor, evaluation, and shared. The frontend is separated into student and admin flows with route-level protection.
+- View: Internal module decomposition of one backend deployable unit.
+- Main concerns: Maintainability, role isolation, feature evolution.
+- Stakeholders: Developers, administrators.
+- Summary: Backend is organized into modules: auth, users, questions, tests, submissions, analytics, monitor, evaluation, shared. Frontend is route-separated for student and admin flows.
 
 #### Process Viewpoint
-This viewpoint addresses performance and responsiveness. Timed tests are session-based and validated server-side. Submission evaluation is asynchronous: the API enqueues work, and the worker evaluates jobs in the background.
+- View: Runtime interaction flows for timed test and async submissions.
+- Main concerns: Performance, responsiveness, reliability.
+- Stakeholders: Students, developers.
+- Summary: Timed-test flow is session-based and validated server-side. Async submission flow uses queue + worker. API returns quickly after enqueue, worker updates result later.
 
 #### Deployment Viewpoint
-This viewpoint addresses setup simplicity and runtime isolation. The backend API and worker are separate Node.js processes. MongoDB stores persistent data, Redis provides queue and telemetry support, and Docker provides isolated execution for code submissions.
+- View: Node API + worker processes with external dependencies.
+- Main concerns: Setup simplicity, runtime isolation, operational clarity.
+- Stakeholders: Deployment owner, developers.
+- Summary: Backend API and worker are Node processes. Persistent data is in MongoDB (local Compass-compatible URI). Queue is Redis. Code execution isolation uses Docker runtime images per language.
 
 #### Security Viewpoint
-This viewpoint addresses unauthorized access and safe execution of untrusted code. A global API auth gate protects all protected functionality, while admin-only functionality uses a role guard. Docker execution is constrained with CPU, memory, timeout, and network limits.
+- View: API access control + sandbox safety boundaries.
+- Main concerns: Unauthorized access prevention, safe execution of untrusted code.
+- Stakeholders: Students, admins, deployment owner.
+- Summary: Global API auth gate protects all /api routes except signup/signin. Admin routes enforce role guard. Docker execution uses CPU, memory, timeout and network restrictions.
 
 #### Operational Viewpoint
-This viewpoint addresses incident detection and debugging. Structured logs, monitor endpoints, worker telemetry, readiness checks, and startup cache warm-up support operations and response-time stability.
+- View: Health, logs, metrics and cache warm-up.
+- Main concerns: Incident detection, debugging speed, read latency.
+- Stakeholders: Developers, administrators.
+- Summary: Structured request logs, monitor endpoints, worker telemetry, readiness probes and startup cache warm-up are used to improve operations and response-time consistency.
+
 
 ## 2.2 Major Design Decisions
 
